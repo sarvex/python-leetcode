@@ -1,25 +1,53 @@
-class Solution:
-    def findMinStep(self, board: str, hand: str) -> int:
-        def remove(s):
-            while len(s):
-                next = re.sub(r'B{3,}|G{3,}|R{3,}|W{3,}|Y{3,}', '', s)
-                if len(next) == len(s):
-                    break
-                s = next
-            return s
+from collections import deque
 
-        visited = set()
-        q = deque([(board, hand)])
-        while q:
-            state, balls = q.popleft()
-            if not state:
-                return len(hand) - len(balls)
-            for ball in set(balls):
-                b = balls.replace(ball, '', 1)
-                for i in range(1, len(state) + 1):
-                    s = state[:i] + ball + state[i:]
-                    s = remove(s)
-                    if s not in visited:
-                        visited.add(s)
-                        q.append((s, b))
-        return -1
+
+class Solution:
+  def findMinStep(self, board: str, hand: str) -> int:
+    def remove(s, i):
+      if i < 0:
+        return s
+
+      left = right = i
+      while left > 0 and s[left - 1] == s[i]:
+        left -= 1
+      while right + 1 < len(s) and s[right + 1] == s[i]:
+        right += 1
+
+      length = right - left + 1
+      if length >= 3:
+        new_s = s[:left] + s[right + 1:]
+        return remove(new_s, left - 1)
+      else:
+        return s
+
+    hand = "".join(sorted(hand))
+
+    q = deque([(board, hand, 0)])
+    visited = set([(board, hand)])
+
+    while q:
+      curr_board, curr_hand, step = q.popleft()
+      for i in range(len(curr_board) + 1):
+        for j in range(len(curr_hand)):
+          if j > 0 and curr_hand[j] == curr_hand[j - 1]:
+            continue
+
+          if i > 0 and curr_board[i - 1] == curr_hand[j]:  # left side same color
+            continue
+
+          pick = False
+          if i < len(curr_board) and curr_board[i] == curr_hand[j]:
+            pick = True
+          if 0 < i < len(curr_board) and curr_board[i - 1] == curr_board[i] and curr_board[i] != curr_hand[j]:
+            pick = True
+
+          if pick:
+            new_board = remove(curr_board[:i] + curr_hand[j] + curr_board[i:], i)
+            new_hand = curr_hand[:j] + curr_hand[j + 1:]
+            if not new_board:
+              return step + 1
+            if (new_board, new_hand) not in visited:
+              q.append((new_board, new_hand, step + 1))
+              visited.add((new_board, new_hand))
+
+    return -1

@@ -1,3 +1,6 @@
+from collections import defaultdict
+
+
 class Node:
     def __init__(self, key: int, value: int) -> None:
         self.key = key
