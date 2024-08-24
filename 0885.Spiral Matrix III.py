@@ -1,19 +1,19 @@
+from bisect import bisect
 from typing import List
 
 
 class Solution:
-  def spiralMatrixIII(self, rows: int, cols: int, rStart: int, cStart: int) -> List[List[int]]:
-    ans = [[rStart, cStart]]
-    if rows * cols == 1:
-      return ans
-    k = 1
-    while True:
-      for dr, dc, dk in [[0, 1, k], [1, 0, k], [0, -1, k + 1], [-1, 0, k + 1]]:
-        for _ in range(dk):
-          rStart += dr
-          cStart += dc
-          if 0 <= rStart < rows and 0 <= cStart < cols:
-            ans.append([rStart, cStart])
-            if len(ans) == rows * cols:
-              return ans
-      k += 2
+  def maxValue(self, events: List[List[int]], k: int) -> int:
+    events.sort(key=lambda ans: ans[1])
+    dp = [[0, 0]]
+    dp2 = [[0, 0]]
+    for x in range(k):
+      for s, e, v in events:
+        i = bisect(dp, [s]) - 1
+        if dp[i][1] + v > dp2[-1][1]:
+          dp2.append([e, dp[i][1] + v])
+
+      dp = dp2
+      dp2 = [[0, 0]]
+
+    return dp[-1][-1]
