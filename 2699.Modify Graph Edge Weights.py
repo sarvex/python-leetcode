@@ -1,40 +1,52 @@
-class Solution:
-    def modifiedGraphEdges(
-        self, n: int, edges: List[List[int]], source: int, destination: int, target: int
-    ) -> List[List[int]]:
-        def dijkstra(edges: List[List[int]]) -> int:
-            g = [[inf] * n for _ in range(n)]
-            for a, b, w in edges:
-                if w == -1:
-                    continue
-                g[a][b] = g[b][a] = w
-            dist = [inf] * n
-            dist[source] = 0
-            vis = [False] * n
-            for _ in range(n):
-                k = -1
-                for j in range(n):
-                    if not vis[j] and (k == -1 or dist[k] > dist[j]):
-                        k = j
-                vis[k] = True
-                for j in range(n):
-                    dist[j] = min(dist[j], dist[k] + g[k][j])
-            return dist[destination]
+from heapq import heappop, heappush
 
-        inf = 2 * 10**9
-        d = dijkstra(edges)
-        if d < target:
-            return []
-        ok = d == target
-        for e in edges:
-            if e[2] > 0:
-                continue
-            if ok:
-                e[2] = inf
-                continue
-            e[2] = 1
-            d = dijkstra(edges)
-            if d <= target:
-                ok = True
-                e[2] += target - d
-        return edges if ok else []
+
+class Solution:
+  def modifiedGraphEdges(self, n, edges, source, destination, target):
+    adjacency_list = [[] for _ in range(n)]
+    for i, (nodeA, nodeB, weight) in enumerate(edges):
+      adjacency_list[nodeA].append((nodeB, i))
+      adjacency_list[nodeB].append((nodeA, i))
+
+    distances = [[float('inf')] * 2 for _ in range(n)]
+    distances[source][0] = distances[source][1] = 0
+
+    self.run_dijkstra(adjacency_list, edges, distances, source, 0, 0)
+    difference = target - distances[destination][0]
+
+    if difference < 0:
+      return []
+
+    self.run_dijkstra(adjacency_list, edges, distances, source, difference, 1)
+
+    if distances[destination][1] < target:
+      return []
+
+    for edge in edges:
+      if edge[2] == -1:
+        edge[2] = 1
+
+    return edges
+
+  def run_dijkstra(self, adjacency_list, edges, distances, source, difference, run):
+    n = len(adjacency_list)
+    priority_queue = [(0, source)]
+    distances[source][run] = 0
+
+    while priority_queue:
+      current_distance, current_node = heappop(priority_queue)
+      if current_distance > distances[current_node][run]:
+        continue
+
+      for next_node, edge_index in adjacency_list[current_node]:
+        weight = edges[edge_index][2]
+        if weight == -1:
+          weight = 1
+        if run == 1 and edges[edge_index][2] == -1:
+          new_weight = difference + distances[next_node][0] - distances[current_node][1]
+          if new_weight > weight:
+            edges[edge_index][2] = weight = new_weight
+
+        if distances[next_node][run] > distances[current_node][run] + weight:
+          distances[next_node][run] = distances[current_node][run] + weight
+          heappush(priority_queue, (distances[next_node][run], next_node))
