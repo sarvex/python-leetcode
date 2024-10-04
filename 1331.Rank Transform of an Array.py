@@ -1,4 +1,8 @@
+from bisect import bisect_right
+from typing import List
+
+
 class Solution:
-    def arrayRankTransform(self, arr: List[int]) -> List[int]:
-        t = sorted(set(arr))
-        return [bisect_right(t, x) for x in arr]
+  def arrayRankTransform(self, arr: List[int]) -> List[int]:
+    t = sorted(set(arr))
+    return [bisect_right(t, x) for x in arr]
