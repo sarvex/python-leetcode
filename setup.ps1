@@ -1,4 +1,20 @@
-Get-ChildItem -Filter *.md -Recurse | Remove-Item
+# Remove all files except JS and TS files
+Get-ChildItem -Path . -Recurse -File | Where-Object { $_.Extension -notin ".py" } | Remove-Item -Force
 
-Get-ChildItem -Filter *.py -Recurse | Rename-Item -NewName { $_.Directory.Name+'.py'}
-Get-ChildItem -Filter *.py -Recurse | Move-Item -Destination { $_.Directory.Parent.FullName }
+# Function to process code files
+function Process-Files($extension) {
+    Get-ChildItem -Path . -Recurse -Filter "*$extension" -File | ForEach-Object {
+        $parentDirName = Split-Path (Split-Path $_.Directory -Parent) -Leaf
+        $targetDir = Split-Path (Split-Path (Split-Path $_.Directory -Parent) -Parent) -Parent
+        $newPath = Join-Path $targetDir "$parentDirName.$extension"
+
+        if (-not (Test-Path $newPath)) {
+            Move-Item $_.FullName $newPath
+        }
+    }
+}
+
+# Process both file types
+Process-Files ".py"
+
+Write-Output "Setup completed successfully!"
