@@ -9,5 +9,9 @@
     "statusBar.border": "#90b83d",
     "tab.activeBorder": "#a7ca5e"
   },
-  "peacock.color": "#90b83d"
+  "peacock.color": "#90b83d",
+  "sonarlint.connectedMode.project": {
+    "connectionId": "sarvex",
+    "projectKey": "sarvex_python-leetcode"
+  }
 }
