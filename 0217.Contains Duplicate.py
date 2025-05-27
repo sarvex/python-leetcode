@@ -1,3 +1,5 @@
+from typing import List
+
 class Solution:
     def containsDuplicate(self, nums: List[int]) -> bool:
-        return any(a == b for a, b in pairwise(sorted(nums)))
+        return len(set(nums)) != len(nums)
