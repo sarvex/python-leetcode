@@ -1,3 +1,4 @@
+from itertools import pairwise
 from typing import List
 
 class Solution:
