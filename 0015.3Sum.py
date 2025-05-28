@@ -1,25 +1,56 @@
+from typing import List
+
 class Solution:
     def threeSum(self, nums: List[int]) -> List[List[int]]:
+        """Two-pointer approach to find all unique triplets that sum to zero.
+        
+        Intuition:
+        Sort the array first to easily skip duplicates and use two pointers to find
+        pairs that sum to the negative of each element.
+        
+        Approach:
+        1. Sort the array to handle duplicates efficiently
+        2. Iterate through each element as a potential first number
+        3. For each first number, use two pointers to find pairs that sum to its negative
+        4. Skip duplicate values to avoid duplicate triplets
+        5. Use early termination when first number is positive (impossible to sum to zero)
+        
+        Complexity:
+        Time: O(n²) where n is the length of the input array
+        Space: O(1) excluding the output array (or O(n) if sorting is not in-place)
+        """
         nums.sort()
         n = len(nums)
-        ans = []
+        result = []
+        
         for i in range(n - 2):
+            # Early termination: if first number > 0, impossible to sum to zero
             if nums[i] > 0:
                 break
-            if i and nums[i] == nums[i - 1]:
+                
+            # Skip duplicates for first position
+            if i > 0 and nums[i] == nums[i - 1]:
                 continue
-            j, k = i + 1, n - 1
-            while j < k:
-                x = nums[i] + nums[j] + nums[k]
-                if x < 0:
-                    j += 1
-                elif x > 0:
-                    k -= 1
+                
+            # Two-pointer technique to find pairs
+            left, right = i + 1, n - 1
+            while left < right:
+                current_sum = nums[i] + nums[left] + nums[right]
+                
+                if current_sum < 0:
+                    left += 1
+                elif current_sum > 0:
+                    right -= 1
                 else:
-                    ans.append([nums[i], nums[j], nums[k]])
-                    j, k = j + 1, k - 1
-                    while j < k and nums[j] == nums[j - 1]:
-                        j += 1
-                    while j < k and nums[k] == nums[k + 1]:
-                        k -= 1
-        return ans
+                    # Found a triplet
+                    result.append([nums[i], nums[left], nums[right]])
+                    
+                    # Move both pointers and skip duplicates
+                    left += 1
+                    right -= 1
+                    while left < right and nums[left] == nums[left - 1]:
+                        left += 1
+                    while left < right and nums[right] == nums[right + 1]:
+                        right -= 1
+                        
+        return result

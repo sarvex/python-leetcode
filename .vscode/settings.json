@@ -1,15 +1,15 @@
 {
   "workbench.colorCustomizations": {
-    "sash.hoverBorder": "#a7ca5e",
-    "statusBar.background": "#90b83d",
-    "statusBar.foreground": "#15202b",
-    "statusBarItem.hoverBackground": "#729230",
-    "statusBarItem.remoteBackground": "#90b83d",
-    "statusBarItem.remoteForeground": "#15202b",
-    "statusBar.border": "#90b83d",
-    "tab.activeBorder": "#a7ca5e"
+    "sash.hoverBorder": "#1f6fd0",
+    "statusBar.background": "#1857a4",
+    "statusBar.foreground": "#e7e7e7",
+    "statusBarItem.hoverBackground": "#1f6fd0",
+    "statusBarItem.remoteBackground": "#1857a4",
+    "statusBarItem.remoteForeground": "#e7e7e7",
+    "statusBar.border": "#1857a4",
+    "tab.activeBorder": "#1f6fd0"
   },
-  "peacock.color": "#90b83d",
+  "peacock.color": "#1857a4",
   "sonarlint.connectedMode.project": {
     "connectionId": "sarvex",
     "projectKey": "sarvex_python-leetcode"
