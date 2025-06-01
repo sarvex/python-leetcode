@@ -24,35 +24,35 @@ class Solution:
         # Handle edge cases
         if divisor == 1:
             return dividend
-        
+
         # Handle overflow case: -2^31 / -1 = 2^31 which exceeds the 32-bit integer range
         INT_MAX = 2**31 - 1
         INT_MIN = -2**31
         if dividend == INT_MIN and divisor == -1:
             return INT_MAX
-        
+
         # Determine the sign of the result
         negative_result = (dividend > 0 and divisor < 0) or (dividend < 0 and divisor > 0)
-        
+
         # Convert both numbers to negative to handle MIN_INT edge case
         # (since abs(MIN_INT) would overflow in a 32-bit integer)
         dividend = -dividend if dividend > 0 else dividend
         divisor = -divisor if divisor > 0 else divisor
-        
+
         result = 0
         while dividend <= divisor:
             # Find largest multiple of divisor that fits into the current dividend
             current_divisor = divisor
             multiple = 1
-            
+
             # Keep doubling the divisor until it would exceed the dividend
             # We check against -2^30 to prevent potential overflow
             while current_divisor >= INT_MIN // 2 and dividend <= current_divisor + current_divisor:
                 current_divisor <<= 1  # Double the divisor
                 multiple <<= 1         # Double the count
-            
+
             # Subtract the largest valid multiple of divisor from dividend
             dividend -= current_divisor
             result += multiple
-        
+
         return -result if negative_result else result
