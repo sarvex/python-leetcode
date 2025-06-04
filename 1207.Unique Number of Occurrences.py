@@ -8,13 +8,13 @@ class Solution:
         Frequency Set Comparison - Check if all occurrence counts are unique
 
         Intuition:
-        If each number appears a unique number of times, then the set of
-        occurrence counts should have the same size as the counter dictionary.
+        For occurrences to be unique, each number must appear a different number of times.
+        We need to check if there are any duplicate occurrence counts.
 
         Approach:
         1. Count occurrences of each number using Counter
         2. Extract the occurrence values into a set
-        3. Compare the length of the set with the length of the counter
+        3. Check if the number of unique occurrence values equals the number of unique elements
            - If equal, all occurrences are unique
            - If not equal, there are duplicate occurrence counts
 
@@ -23,4 +23,5 @@ class Solution:
         Space: O(k) where k is the number of unique elements in arr
         """
         counter = Counter(arr)
-        return len(set(counter.values())) == len(counter)
+        values = list(counter.values())
+        return len(set(values)) == len(values)
