@@ -2,9 +2,12 @@ class Solution:
     def answerString(self, word: str, numFriends: int) -> str:
         if numFriends == 1:
             return word
-        n = len(word)
-        ans = ""
-        for i in range(n):
-            k = min(n - i, n - numFriends + 1)
-            ans = max(ans, word[i : i + k])
-        return ans
+
+        window = len(word) - numFriends + 1
+        result = -1
+        max_score = ""
+        for idx in range(len(word)):
+            if word[idx: idx + window] > max_score:
+                max_score = word[idx: idx + window]
+                result = idx
+        return word[result: result + window]
