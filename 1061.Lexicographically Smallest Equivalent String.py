@@ -1,22 +1,45 @@
 class Solution:
     def smallestEquivalentString(self, s1: str, s2: str, baseStr: str) -> str:
-        p = list(range(26))
+        """Union-find with lexicographically smallest representative
 
-        def find(x):
-            if p[x] != x:
-                p[x] = find(p[x])
-            return p[x]
+        Intuition:
+        Characters can be equivalent to each other, forming equivalence classes.
+        For each class, we want to map all characters to the lexicographically smallest one.
 
-        for i in range(len(s1)):
-            a, b = ord(s1[i]) - ord('a'), ord(s2[i]) - ord('a')
-            pa, pb = find(a), find(b)
-            if pa < pb:
-                p[pb] = pa
+        Approach:
+        1. Use Union-Find data structure to group equivalent characters
+        2. When merging two groups, always make the lexicographically smaller character the representative
+        3. For each character in baseStr, find its representative and use it in the result
+
+        Complexity:
+        Time: O(n + m), where n is length of s1/s2 and m is length of baseStr
+        Space: O(1), as we use a fixed-size array of 26 characters
+        """
+        # Initialize parent array where each character is its own parent
+        parents = list(range(26))
+
+        def find(x: int) -> int:
+            """Find the representative of character x with path compression"""
+            if parents[x] != x:
+                parents[x] = find(parents[x])
+            return parents[x]
+
+        def union(x: int, y: int) -> None:
+            """Union two characters, making the lexicographically smaller one the representative"""
+            root_x, root_y = find(x), find(y)
+            if root_x < root_y:
+                parents[root_y] = root_x
             else:
-                p[pa] = pb
+                parents[root_x] = root_y
 
-        res = []
-        for a in baseStr:
-            a = ord(a) - ord('a')
-            res.append(chr(find(a) + ord('a')))
-        return ''.join(res)
+        # Build the equivalence classes
+        for c1, c2 in zip(s1, s2):
+            union(ord(c1) - ord('a'), ord(c2) - ord('a'))
+
+        # Map each character in baseStr to its lexicographically smallest equivalent
+        result = []
+        for char in baseStr:
+            char_idx = ord(char) - ord('a')
+            result.append(chr(find(char_idx) + ord('a')))
+
+        return ''.join(result)
