@@ -21,19 +21,19 @@ class Solution:
         Space: O(m*n) for the queue in worst case
         """
         m, n = len(grid), len(grid[0])
-        fresh_count = 0
+        fresh = 0
         rotten = deque()
 
         # Initial scan to count fresh oranges and collect rotten ones
         for i, row in enumerate(grid):
             for j, cell in enumerate(row):
                 if cell == 1:
-                    fresh_count += 1
+                    fresh += 1
                 elif cell == 2:
                     rotten.append((i, j))
 
         # No fresh oranges means we're already done
-        if fresh_count == 0:
+        if fresh == 0:
             return 0
 
         # Directions: up, right, down, left
@@ -41,7 +41,7 @@ class Solution:
         minutes = 0
 
         # BFS traversal
-        while rotten and fresh_count > 0:
+        while rotten and fresh > 0:
             minutes += 1
 
             # Process all currently rotten oranges
@@ -55,8 +55,8 @@ class Solution:
                     # If adjacent cell is valid and has a fresh orange
                     if (0 <= ni < m and 0 <= nj < n and grid[ni][nj] == 1):
                         grid[ni][nj] = 2  # Make it rotten
-                        fresh_count -= 1
+                        fresh -= 1
                         rotten.append((ni, nj))
 
         # If any fresh oranges remain, they can't be reached
-        return minutes if fresh_count == 0 else -1
+        return minutes if fresh == 0 else -1
