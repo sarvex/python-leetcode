@@ -1,3 +1,5 @@
+from functools import cache
+
 class Solution:
     def numTilings(self, n: int) -> int:
         @cache
