@@ -22,9 +22,12 @@ class Solution:
         Time: O(n) where n is the length of the input array
         Space: O(1) as we modify the array in-place with constant extra space
         """
-        k = 0
-        for x in nums:
-            if k == 0 or x != nums[k - 1]:
-                nums[k] = x
-                k += 1
-        return k
+        if not nums:
+            return 0
+
+        insert = 0
+        for num in nums:
+            if insert == 0 or num != nums[insert - 1]:
+                nums[insert] = num
+                insert += 1
+        return insert

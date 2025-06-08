@@ -23,9 +23,12 @@ class Solution:
         Time: O(n) where n is the length of nums, as we process each element once
         Space: O(1) as we modify the array in-place without extra space
         """
-        k = 0
-        for x in nums:
-            if x != val:
-                nums[k] = x
-                k += 1
-        return k
+        if not nums:
+            return 0
+
+        insert = 0
+        for num in nums:
+            if num != val:
+                nums[insert] = num
+                insert += 1
+        return insert
