@@ -21,19 +21,19 @@ class Solution:
         Space: O(1) using only constant extra space
         """
         jumps = 0
-        max_reach = 0
+        reach = 0
         furthest = 0
 
         # No need to consider the last element as we're already at destination
-        for i, jump_distance in enumerate(nums[:-1]):
+        for i, distance in enumerate(nums[:-1]):
             # Update the furthest position we can reach from current position
-            max_reach = max(max_reach, i + jump_distance)
+            reach = max(reach, i + distance)
 
             # If we've reached the furthest position from our previous jump
             if furthest == i:
                 # We must make another jump
                 jumps += 1
                 # Update the furthest we can go with this new jump
-                furthest = max_reach
+                furthest = reach
 
         return jumps

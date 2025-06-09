@@ -18,18 +18,19 @@ class Solution:
         Time: O(n) where n is the length of nums
         Space: O(1) as we only use constant extra space
         """
-        max_reach = 0
+        reach = 0
+        n = len(nums) - 1
 
-        for i, jump_length in enumerate(nums):
+        for i, jump in enumerate(nums):
             # If current position is beyond our reach, we can't proceed
-            if max_reach < i:
+            if reach < i:
                 return False
 
             # Update the furthest position we can reach
-            max_reach = max(max_reach, i + jump_length)
+            reach = max(reach, i + jump)
 
             # Early termination if we can already reach the end
-            if max_reach >= len(nums) - 1:
+            if reach >= n:
                 return True
 
         return True
