@@ -20,11 +20,8 @@ class Solution:
         Space: O(1) as we only use constant extra space
         """
         # Handle edge cases
-        if not strs:
-            return ""
-
-        if not strs[0]:
-            return ""
+        if not strs or not strs[0]:
+            return ''
 
         # Get the first string as our reference
         first_str = strs[0]

@@ -1,3 +1,6 @@
+from itertools import pairwise
+
+
 class Solution:
     def romanToInt(self, s: str) -> int:
         """Convert Roman numeral to integer.
@@ -22,8 +25,6 @@ class Solution:
         # Handle edge case of single character
         if len(s) == 1:
             return values[s]
-
-        from itertools import pairwise
 
         total = 0
         # Process all character pairs
