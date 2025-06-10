@@ -24,15 +24,15 @@ class Solution:
             return ''
 
         # Get the first string as our reference
-        first_str = strs[0]
+        first = strs[0]
 
         # Iterate through each character of the first string
-        for i in range(len(first_str)):
+        for i in range(len(first)):
             # Check this character against all other strings
             for s in strs[1:]:
                 # If we've reached the end of current string or found a mismatch
-                if i >= len(s) or s[i] != first_str[i]:
-                    return first_str[:i]
+                if i >= len(s) or s[i] != first[i]:
+                    return first[:i]
 
         # If we get here, the entire first string is a prefix of all strings
-        return first_str
+        return first
