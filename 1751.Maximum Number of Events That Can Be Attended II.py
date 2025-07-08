@@ -54,25 +54,19 @@ class Solution:
 
         for j in range(1, k + 1):
             dp_curr = [0] * n
-            current_max = -1
 
             for i in range(n):
                 # Option 1: Don't take the current event
-                if i > 0:
-                    dp_curr[i] = dp_curr[i - 1]
+                dp_curr[i] = dp_curr[i - 1] if i > 0 else 0
 
                 # Option 2: Take the current event
-                if j == 1:  # Base case: first event we take
-                    take = events[i][2]
-                else:
-                    prev_idx = predecessor[i]
-                    take = events[i][2] + (dp_prev[prev_idx] if prev_idx != -1 else 0)
+                prev_idx = predecessor[i]
+                take_value = events[i][2]
+                if j > 1 and prev_idx != -1:
+                    take_value += dp_prev[prev_idx]
 
-                # Update current maximum for this number of events
-                current_max = max(current_max, take)
-                dp_curr[i] = max(dp_curr[i], current_max)
+                dp_curr[i] = max(dp_curr[i], take_value)
 
             dp_prev = dp_curr
-            max_value = max(max_value, max(dp_prev) if n > 0 else 0)
-
+            max_value = max(max_value, dp_curr[-1] if n > 0 else 0)
         return max_value
