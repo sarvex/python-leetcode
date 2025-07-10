@@ -1,3 +1,5 @@
+from typing import List
+
 class Solution:
     def maxFreeTime(
         self, eventTime: int, startTime: List[int], endTime: List[int]
@@ -41,4 +43,4 @@ class Solution:
 
             res = max(res, left_gap + interval + right_gap)
 
-        return res
+        return res
