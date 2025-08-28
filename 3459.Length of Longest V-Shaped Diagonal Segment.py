@@ -1,34 +1,67 @@
+from functools import cache
+from typing import List
+
+
 class Solution:
     def lenOfVDiagonal(self, grid: List[List[int]]) -> int:
-        m, n = len(grid), len(grid[0])
-        next_digit = {1: 2, 2: 0, 0: 2}
+        """Optimized DP with memoized DFS and pruning
 
-        def within_bounds(i, j):
-            return 0 <= i < m and 0 <= j < n
+        Intuition
+        ---------
+        V-shaped diagonals alternate values (1 -> 2 -> 0 -> 2 -> ...). From any starting cell with 1,
+        we may extend along one diagonal direction and optionally turn once to the adjacent diagonal.
+
+        Approach
+        --------
+        Use DFS with memoization over state (x, y, turned, dir). At each step we either:
+        - continue in the same direction if the next cell matches the required alternating value, or
+        - if we haven't turned yet, turn to the adjacent diagonal and continue similarly.
+
+        We also prune starts using a theoretical upper bound per direction so we avoid exploring
+        states that cannot beat the current best.
+
+        Complexity
+        ----------
+        Time: O(m * n * 4 * 2)
+        Space: O(m * n * 4 * 2) for memoization
+        """
+
+        n, m = len(grid), len(grid[0])
+
+        # Diagonal directions in clockwise order: ↘, ↙, ↖, ↗
+        dirs = [(1, 1), (1, -1), (-1, -1), (-1, 1)]
+
+        # Next expected value given current cell value: 1->2, 2->0, 0->2
+        nv = [2, 2, 0]
 
         @cache
-        def f(i, j, di, dj, turned):
-            result = 1
-            successor = next_digit[grid[i][j]]
-
-            if within_bounds(i + di, j + dj) and grid[i + di][j + dj] == successor:
-                result = 1 + f(i + di, j + dj, di, dj, turned)
+        def helper(x: int, y: int, turned: bool, dir_idx: int) -> int:
+            res = 1
+            dx, dy = dirs[dir_idx]
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < n and 0 <= ny < m and grid[nx][ny] == nv[grid[x][y]]:
+                res = helper(nx, ny, turned, dir_idx) + 1
 
             if not turned:
-                di, dj = dj, -di
-                if within_bounds(i + di, j + dj) and grid[i + di][j + dj] == successor:
-                    result = max(result, 1 + f(i + di, j + dj, di, dj, True))
+                ndir = (dir_idx + 1) % 4  # turn to adjacent diagonal (clockwise)
+                dx, dy = dirs[ndir]
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < n and 0 <= ny < m and grid[nx][ny] == nv[grid[x][y]]:
+                    res = max(res, helper(nx, ny, True, ndir) + 1)
 
-            return result
+            return res
 
-        directions = ((1, 1), (-1, 1), (1, -1), (-1, -1))
-        result = 0
-
-        for i in range(m):
-            for j in range(n):
+        best = 0
+        for i in range(n):
+            for j in range(m):
                 if grid[i][j] != 1:
                     continue
-                for di, dj in directions:
-                    result = max(result, f(i, j, di, dj, False))
 
-        return result
+                # Theoretical per-direction bounds; if it can't beat current best, skip exploring.
+                # Matches dirs order (↘, ↙, ↖, ↗)
+                bounds = (n - i, j + 1, i + 1, m - j)
+                for d in range(4):
+                    if bounds[d] > best:
+                        best = max(best, helper(i, j, False, d))
+
+        return best
