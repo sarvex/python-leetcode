@@ -94,7 +94,7 @@ class Router:
         return [s, d, t]
 
     def getCount(self, destination: int, startTime: int, endTime: int) -> int:
-        """Count stored packets with given destination and timestamp in [startTime, endTime].
+        """Count stored packets with destination in [startTime, endTime].
 
         Intuition:
             Timestamps per destination are non-decreasing; use binary search on
