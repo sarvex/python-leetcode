@@ -2,42 +2,33 @@ import pandas as pd
 
 
 def trips_and_users(trips: pd.DataFrame, users: pd.DataFrame) -> pd.DataFrame:
-    # 1) temporal filtering
-    trips = trips[trips["request_at"].between("2013-10-01", "2013-10-03")].rename(
-        columns={"request_at": "Day"}
-    )
+    """
+    Tagline: Filter active users and compute daily cancellation rate via vectorized operations.
 
-    # 2) filtering based not banned
-    # 2.1) mappning the column 'banned' to `client_id` and `driver_id`
-    df_client = (
-        pd.merge(trips, users, left_on="client_id", right_on="users_id", how="left")
-        .drop(["users_id", "role"], axis=1)
-        .rename(columns={"banned": "banned_client"})
-    )
-    df_driver = (
-        pd.merge(trips, users, left_on="driver_id", right_on="users_id", how="left")
-        .drop(["users_id", "role"], axis=1)
-        .rename(columns={"banned": "banned_driver"})
-    )
-    df = pd.merge(
-        df_client,
-        df_driver,
-        left_on=["id", "driver_id", "client_id", "city_id", "status", "Day"],
-        right_on=["id", "driver_id", "client_id", "city_id", "status", "Day"],
-        how="left",
-    )
-    # 2.2) filtering based on not banned
-    df = df[(df["banned_client"] == "No") & (df["banned_driver"] == "No")]
+    Intuition: Only trips with non-banned clients and drivers within the target date window count.
+    The cancellation rate is the mean of a boolean flag per day.
 
-    # 3) counting the cancelled and total trips per day
-    df["status_cancelled"] = df["status"].str.contains("cancelled")
-    df = df[["Day", "status_cancelled"]]
-    df = df.groupby("Day").agg(
-        {"status_cancelled": [("total_cancelled", "sum"), ("total", "count")]}
-    )
-    df.columns = df.columns.droplevel()
-    df = df.reset_index()
+    Approach:
+    - Build the allowed user set where banned == 'No'.
+    - Keep trips whose client_id and driver_id are both in the allowed set.
+    - Filter trips by request_at between 2013-10-01 and 2013-10-03 inclusive.
+    - Derive a boolean 'cancelled' from status containing 'cancelled' (case-insensitive).
+    - Group by day and compute the mean, round to 2 decimals, and rename columns.
 
-    # 4) calculating the ratio
-    df["Cancellation Rate"] = (df["total_cancelled"] / df["total"]).round(2)
-    return df[["Day", "Cancellation Rate"]]
+    Complexity:
+    - Time: O(T + U) to filter plus grouping over filtered trips.
+    - Space: O(T) for intermediate filtered DataFrame.
+    """
+    allowed_ids = users.loc[users["banned"] == "No", "users_id"]
+    mask_allowed = trips["client_id"].isin(allowed_ids) & trips["driver_id"].isin(allowed_ids)
+    mask_date = trips["request_at"].between("2013-10-01", "2013-10-03")
+    df = trips.loc[mask_allowed & mask_date].copy()
+
+    df["cancelled"] = df["status"].str.contains("cancelled", case=False, na=False)
+    rate = (
+        df.groupby("request_at", as_index=False)["cancelled"]
+        .mean()
+        .round({"cancelled": 2})
+        .rename(columns={"request_at": "Day", "cancelled": "Cancellation Rate"})
+    )
+    return rate
