@@ -2,34 +2,42 @@ from typing import List
 
 class Solution:
     def maxArea(self, height: List[int]) -> int:
-        """Two-pointer approach to find container with most water
+        """Optimized two-pointer with aggressive skip strategy
 
         Intuition:
         The amount of water contained depends on the shorter height and the distance between lines.
-        We can start with the widest container and move inward, always discarding the shorter line.
+        When moving inward doesn't improve the area, we can skip positions until we find a taller line.
 
         Approach:
         1. Use two pointers starting from both ends of the array
-        2. Calculate area as (right - left) * min(height[left], height[right])
-        3. Move the pointer with the shorter height inward
-        4. Keep track of the maximum area seen so far
+        2. Calculate area and update maximum if it improves
+        3. If area doesn't improve, skip positions on the shorter side until finding a taller line
+        4. This avoids checking positions that won't yield better results
 
         Complexity:
-        Time: O(n) where n is the length of the height array (single pass)
+        Time: O(n) where n is the length of the height array (amortized single pass)
         Space: O(1) as we only use constant extra space
         """
-        left, right = 0, len(height) - 1
-        max_area = 0
+        ans = i = 0
+        j = len(height) - 1
 
-        while left < right:
-            # Calculate current area
-            current_area = (right - left) * min(height[left], height[right])
-            max_area = max(max_area, current_area)
+        while j > i:
+            temp = (j - i) * min(height[i], height[j])
 
-            # Move the pointer with shorter height inward
-            if height[left] < height[right]:
-                left += 1
+            if temp > ans:
+                ans = temp
             else:
-                right -= 1
+                if height[i] > height[j]:
+                    temp = j
+                    while j != i:
+                        j -= 1
+                        if height[j] > height[temp]:
+                            break
+                else:
+                    temp = i
+                    while j != i:
+                        i += 1
+                        if height[i] > height[temp]:
+                            break
 
-        return max_area
+        return ans
