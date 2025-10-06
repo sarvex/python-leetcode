@@ -3,20 +3,17 @@ class Solution:
         """Binary search on answer combined with DFS path validation.
 
         Intuition
-        ---------
         The minimum time needed is at least the maximum of start and end values.
         We can binary search on possible time values and check if a path exists
         where all cells have values <= that time.
 
         Approach
-        --------
         1. Binary search on the time range [max(start, end), n*n-1]
         2. For each mid value, use DFS to check if we can reach destination
         3. Only visit cells with value <= current time threshold
         4. If reachable, try smaller times; otherwise try larger times
 
         Complexity
-        ----------
         Time: O(n^2 * log(n^2)) where n is grid dimension
         Space: O(n^2) for visited set and recursion stack
         """
