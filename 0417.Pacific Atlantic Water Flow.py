@@ -1,37 +1,58 @@
 class Solution:
-    def pacificAtlantic(self, heights: List[List[int]]) -> List[List[int]]:
-        def bfs(q, vis):
-            while q:
-                for _ in range(len(q)):
-                    i, j = q.popleft()
-                    for a, b in [[0, -1], [0, 1], [1, 0], [-1, 0]]:
-                        x, y = i + a, j + b
-                        if (
-                            0 <= x < m
-                            and 0 <= y < n
-                            and (x, y) not in vis
-                            and heights[x][y] >= heights[i][j]
-                        ):
-                            vis.add((x, y))
-                            q.append((x, y))
+    def pacificAtlantic(self, heights: list[list[int]]) -> list[list[int]]:
+        """Stack-based DFS to find cells reachable from both oceans.
 
-        m, n = len(heights), len(heights[0])
-        vis1, vis2 = set(), set()
-        q1 = deque()
-        q2 = deque()
-        for i in range(m):
-            for j in range(n):
-                if i == 0 or j == 0:
-                    vis1.add((i, j))
-                    q1.append((i, j))
-                if i == m - 1 or j == n - 1:
-                    vis2.add((i, j))
-                    q2.append((i, j))
-        bfs(q1, vis1)
-        bfs(q2, vis2)
+        Intuition:
+        Instead of checking if water flows from each cell to oceans, reverse the
+        problem: find all cells reachable from each ocean by flowing upward.
+        The intersection gives cells that can reach both oceans.
+
+        Approach:
+        - Use stack-based DFS starting from ocean borders
+        - Track visited cells for Pacific (top/left edges) and Atlantic (bottom/right edges)
+        - For each ocean, traverse upward (to cells with >= height)
+        - Return cells present in both visited sets
+
+        Complexity:
+        Time: O(m * n) - each cell visited at most twice
+        Space: O(m * n) - for visited sets and stack
+        """
+        rows, cols = len(heights), len(heights[0])
+        directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+
+        def traverse(stack: list[list[int]]) -> set[tuple[int, int]]:
+            visited = set()
+            while stack:
+                i, j = stack.pop()
+                visited.add((i, j))
+                for di, dj in directions:
+                    ni, nj = i + di, j + dj
+                    if (
+                        0 <= ni < rows
+                        and 0 <= nj < cols
+                        and heights[i][j] <= heights[ni][nj]
+                        and (ni, nj) not in visited
+                    ):
+                        stack.append([ni, nj])
+            return visited
+
+        pacific_stack = []
+        atlantic_stack = []
+
+        for j in range(cols):
+            pacific_stack.append([0, j])
+            atlantic_stack.append([rows - 1, j])
+
+        for i in range(rows):
+            pacific_stack.append([i, 0])
+            atlantic_stack.append([i, cols - 1])
+
+        pacific_reachable = traverse(pacific_stack)
+        atlantic_reachable = traverse(atlantic_stack)
+
         return [
-            (i, j)
-            for i in range(m)
-            for j in range(n)
-            if (i, j) in vis1 and (i, j) in vis2
+            [i, j]
+            for i in range(rows)
+            for j in range(cols)
+            if (i, j) in pacific_reachable and (i, j) in atlantic_reachable
         ]
