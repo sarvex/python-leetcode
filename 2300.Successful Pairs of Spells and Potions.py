@@ -26,8 +26,8 @@ class Solution:
         m = len(potions)
 
         def count_successful_pairs(spell: int) -> int:
-            # Find minimum potion strength needed
-            min_strength = success / spell
+            # Find minimum potion strength needed using ceiling division
+            min_strength = -(-success // spell)
             # Find index of first potion that works
             idx = bisect_left(potions, min_strength)
             # Return count of valid potions
