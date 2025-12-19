@@ -1,27 +1,41 @@
+from collections import deque, defaultdict
+from typing import List
+from itertools import groupby
+
+
 class Solution:
     def findAllPeople(
         self, n: int, meetings: List[List[int]], firstPerson: int
     ) -> List[int]:
-        vis = [False] * n
-        vis[0] = vis[firstPerson] = True
+        # Initialize secret knowledge: person 0 and firstPerson
+        has_secret = [False] * n
+        has_secret[0] = True
+        has_secret[firstPerson] = True
+
+        # Sort meetings by time
         meetings.sort(key=lambda x: x[2])
-        i, m = 0, len(meetings)
-        while i < m:
-            j = i
-            while j + 1 < m and meetings[j + 1][2] == meetings[i][2]:
-                j += 1
-            s = set()
-            g = defaultdict(list)
-            for x, y, _ in meetings[i : j + 1]:
-                g[x].append(y)
-                g[y].append(x)
-                s.update([x, y])
-            q = deque([u for u in s if vis[u]])
-            while q:
-                u = q.popleft()
-                for v in g[u]:
-                    if not vis[v]:
-                        vis[v] = True
-                        q.append(v)
-            i = j + 1
-        return [i for i, v in enumerate(vis) if v]
+
+        # Group meetings by their occurrence time
+        for time, time_group in groupby(meetings, key=lambda x: x[2]):
+            graph = defaultdict(list)
+            people_involved = set()
+
+            # Build an adjacency list for the current time slice
+            for u, v, _ in time_group:
+                graph[u].append(v)
+                graph[v].append(u)
+                people_involved.add(u)
+                people_involved.add(v)
+
+            # Start BFS from people who already know the secret in this group
+            queue = deque([p for p in people_involved if has_secret[p]])
+
+            while queue:
+                curr = queue.popleft()
+                for neighbor in graph[curr]:
+                    if not has_secret[neighbor]:
+                        has_secret[neighbor] = True
+                        queue.append(neighbor)
+
+        # Return all people who know the secret
+        return [i for i, known in enumerate(has_secret) if known]
