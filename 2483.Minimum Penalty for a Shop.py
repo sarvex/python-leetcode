@@ -1,12 +1,10 @@
 class Solution:
     def bestClosingTime(self, customers: str) -> int:
-        n = len(customers)
-        s = [0] * (n + 1)
+        max_score = score = 0
+        best_hour = 0
         for i, c in enumerate(customers):
-            s[i + 1] = s[i] + int(c == 'Y')
-        ans, cost = 0, inf
-        for j in range(n + 1):
-            t = j - s[j] + s[-1] - s[j]
-            if cost > t:
-                ans, cost = j, t
-        return ans
+            score += 1 if c == "Y" else -1
+            if score > max_score:
+                max_score = score
+                best_hour = i + 1
+        return best_hour
