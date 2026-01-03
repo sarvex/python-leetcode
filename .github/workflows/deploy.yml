@@ -29,8 +29,8 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository == 'doocs/leetcode'
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
         with:
           ref: docs
           path: mkdocs
