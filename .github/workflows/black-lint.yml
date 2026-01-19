@@ -30,6 +30,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v5
-    - uses: jpetrucciani/black-check@25.9.0
+    - uses: jpetrucciani/black-check@26.1.0
       with:
         black_flags: '-S'
