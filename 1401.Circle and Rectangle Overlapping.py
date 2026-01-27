@@ -9,11 +9,27 @@ class Solution:
         x2: int,
         y2: int,
     ) -> bool:
-        def f(i: int, j: int, k: int) -> int:
-            if i <= k <= j:
-                return 0
-            return i - k if k < i else k - j
+        """Check if a circle and axis-aligned rectangle overlap.
 
-        a = f(x1, x2, xCenter)
-        b = f(y1, y2, yCenter)
-        return a * a + b * b <= radius * radius
+        Intuition:
+            Find the closest point on the rectangle to the circle center,
+            then check if the distance is within the radius.
+
+        Approach:
+            For each axis, compute the distance from the circle center to
+            the nearest edge of the rectangle (clamped to zero if inside).
+            Check if the squared distance is at most radius squared.
+
+        Complexity:
+            Time: O(1)
+            Space: O(1)
+        """
+
+        def closest_distance(low: int, high: int, center: int) -> int:
+            if low <= center <= high:
+                return 0
+            return low - center if center < low else center - high
+
+        dx = closest_distance(x1, x2, xCenter)
+        dy = closest_distance(y1, y2, yCenter)
+        return dx * dx + dy * dy <= radius * radius

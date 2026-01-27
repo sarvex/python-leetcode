@@ -1,35 +1,27 @@
 class Solution:
-    """
-    1411. Number of Ways to Paint N × 3 Grid
-    
-    You have a grid of size n x 3 and you want to paint each cell of the grid with exactly one of the three colors: Red, Yellow, or Green while making sure that no two adjacent cells have the same color (i.e., no two cells that share vertical or horizontal sides have the same color).
-    
-    Return the number of ways you can paint this grid. As the answer may grow large, the answer must be computed modulo 10^9 + 7.
-    """
     def numOfWays(self, n: int) -> int:
-        MOD = 10 ** 9 + 7
-        
-        # color2: count of patterns in a row using exactly 2 colors (e.g., ABA)
-        # color3: count of patterns in a row using exactly 3 colors (e.g., ABC)
-        
-        # Base case for n=1:
-        # 3 colors options for 1st cell * 2 options for 2nd * 1 option for 3rd = 6 ways (ABC, etc)
-        # 3 colors options for 1st cell * 2 options for 2nd * 1 option for 3rd (must match 1st) = 6 ways (ABA, etc)
-        color2 = 6
-        color3 = 6
-        
+        """Count ways to paint an n x 3 grid with 3 colors, no adjacent same.
+
+        Intuition:
+            Each row has two pattern types: 2-color (ABA) and 3-color (ABC).
+            Track transitions between these pattern types across rows.
+
+        Approach:
+            Start with 6 patterns of each type for the first row. For each
+            subsequent row, a 2-color pattern generates 3 two-color and 2
+            three-color successors; a 3-color pattern generates 2 of each.
+
+        Complexity:
+            Time: O(n) iterating through rows
+            Space: O(1) tracking two counts
+        """
+        modulus = 10**9 + 7
+        two_color = 6
+        three_color = 6
+
         for _ in range(n - 1):
-            # Transitions:
-            # If previous row was 2-color pattern (ABA):
-            #   - Can generate 3 new 2-color patterns (BAB, BCB, CAC)
-            #   - Can generate 2 new 3-color patterns (BAC, CAB)
-            # If previous row was 3-color pattern (ABC):
-            #   - Can generate 2 new 2-color patterns (BAB, BCA)
-            #   - Can generate 2 new 3-color patterns (BCA, CAB)
-            
-            new_color2 = (3 * color2 + 2 * color3) % MOD
-            new_color3 = (2 * color2 + 2 * color3) % MOD
-            
-            color2, color3 = new_color2, new_color3
-            
-        return (color2 + color3) % MOD
+            new_two_color = (3 * two_color + 2 * three_color) % modulus
+            new_three_color = (2 * two_color + 2 * three_color) % modulus
+            two_color, three_color = new_two_color, new_three_color
+
+        return (two_color + three_color) % modulus

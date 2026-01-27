@@ -1,30 +1,53 @@
 from math import inf
-from typing import List
 
 
 class Solution:
-  def smallestSufficientTeam(self, req_skills: List[str], people: List[List[str]]) -> List[int]:
-    d = {s: i for i, s in enumerate(req_skills)}
-    m, n = len(req_skills), len(people)
-    p = [0] * n
-    for i, ss in enumerate(people):
-      for s in ss:
-        p[i] |= 1 << d[s]
-    f = [inf] * (1 << m)
-    g = [0] * (1 << m)
-    h = [0] * (1 << m)
-    f[0] = 0
-    for i in range(1 << m):
-      if f[i] == inf:
-        continue
-      for j in range(n):
-        if f[i] + 1 < f[i | p[j]]:
-          f[i | p[j]] = f[i] + 1
-          g[i | p[j]] = j
-          h[i | p[j]] = i
-    i = (1 << m) - 1
-    ans = []
-    while i:
-      ans.append(g[i])
-      i = h[i]
-    return ans
+    def smallestSufficientTeam(
+        self, req_skills: list[str], people: list[list[str]]
+    ) -> list[int]:
+        """Find the smallest team whose combined skills cover all required skills.
+
+        Intuition:
+            Represent each person's skills as a bitmask. The problem becomes
+            finding the minimum set of bitmasks that OR to the full mask.
+
+        Approach:
+            Use dynamic programming over bitmask states. For each achievable
+            state, try adding each person and update the next state if the
+            team size improves. Track the last person added and the previous
+            state for path reconstruction.
+
+        Complexity:
+            Time: O(2^m * n) where m is the number of skills and n is the number of people
+            Space: O(2^m) for the DP arrays
+        """
+        skill_index = {skill: i for i, skill in enumerate(req_skills)}
+        num_skills = len(req_skills)
+        num_people = len(people)
+        person_mask = [0] * num_people
+        for i, skills in enumerate(people):
+            for skill in skills:
+                person_mask[i] |= 1 << skill_index[skill]
+
+        total_states = 1 << num_skills
+        min_team_size = [inf] * total_states
+        last_person = [0] * total_states
+        prev_state = [0] * total_states
+        min_team_size[0] = 0
+
+        for state in range(total_states):
+            if min_team_size[state] == inf:
+                continue
+            for person in range(num_people):
+                next_state = state | person_mask[person]
+                if min_team_size[state] + 1 < min_team_size[next_state]:
+                    min_team_size[next_state] = min_team_size[state] + 1
+                    last_person[next_state] = person
+                    prev_state[next_state] = state
+
+        state = total_states - 1
+        team: list[int] = []
+        while state:
+            team.append(last_person[state])
+            state = prev_state[state]
+        return team

@@ -1,29 +1,51 @@
+from heapq import heappop, heappush
+
+
 class Solution:
     def longestDiverseString(self, a: int, b: int, c: int) -> str:
-        h = []
+        """Build the longest string with no three consecutive identical chars.
+
+        Intuition:
+            Greedily use the most frequent character, switching to the next
+            most frequent when two consecutive are already placed.
+
+        Approach:
+            Use a max-heap (negated counts) to always pick the character
+            with the highest remaining count. If the top character would
+            create three consecutive, pop the next character instead.
+
+        Complexity:
+            Time: O((a + b + c) * log 3) which is O(a + b + c)
+            Space: O(a + b + c) for the result
+        """
+        heap: list[list[int | str]] = []
         if a > 0:
-            heappush(h, [-a, 'a'])
+            heappush(heap, [-a, "a"])
         if b > 0:
-            heappush(h, [-b, 'b'])
+            heappush(heap, [-b, "b"])
         if c > 0:
-            heappush(h, [-c, 'c'])
+            heappush(heap, [-c, "c"])
 
-        ans = []
-        while len(h) > 0:
-            cur = heappop(h)
-            if len(ans) >= 2 and ans[-1] == cur[1] and ans[-2] == cur[1]:
-                if len(h) == 0:
+        result: list[str] = []
+        while heap:
+            current = heappop(heap)
+            if (
+                len(result) >= 2
+                and result[-1] == current[1]
+                and result[-2] == current[1]
+            ):
+                if not heap:
                     break
-                nxt = heappop(h)
-                ans.append(nxt[1])
-                if -nxt[0] > 1:
-                    nxt[0] += 1
-                    heappush(h, nxt)
-                heappush(h, cur)
+                next_char = heappop(heap)
+                result.append(next_char[1])
+                if -next_char[0] > 1:
+                    next_char[0] += 1
+                    heappush(heap, next_char)
+                heappush(heap, current)
             else:
-                ans.append(cur[1])
-                if -cur[0] > 1:
-                    cur[0] += 1
-                    heappush(h, cur)
+                result.append(current[1])
+                if -current[0] > 1:
+                    current[0] += 1
+                    heappush(heap, current)
 
-        return ''.join(ans)
+        return "".join(result)

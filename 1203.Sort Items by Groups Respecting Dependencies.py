@@ -1,51 +1,71 @@
 from collections import deque
-from typing import List
 
 
 class Solution:
-  def sortItems(self, n: int, m: int, group: List[int], beforeItems: List[List[int]]) -> List[int]:
-    def sort(degree, graph, items):
-      q = deque(i for _, i in enumerate(items) if degree[i] == 0)
-      res = []
-      while q:
-        i = q.popleft()
-        res.append(i)
-        for j in graph[i]:
-          degree[j] -= 1
-          if degree[j] == 0:
-            q.append(j)
-      return res if len(res) == len(items) else []
+    def sortItems(
+        self, n: int, m: int, group: list[int], before_items: list[list[int]]
+    ) -> list[int]:
+        """Topological sort of items respecting both group and item dependencies.
 
-    idx = m
-    group_items = [[] for _ in range(n + m)]
-    for i, g in enumerate(group):
-      if g == -1:
-        group[i] = idx
-        idx += 1
-      group_items[group[i]].append(i)
+        Intuition:
+            Items within the same group must be contiguous in the output. We need
+            two levels of topological sort: one for groups and one for items
+            within each group.
 
-    item_degree = [0] * n
-    group_degree = [0] * (n + m)
-    item_graph = [[] for _ in range(n)]
-    group_graph = [[] for _ in range(n + m)]
-    for i, gi in enumerate(group):
-      for j in beforeItems[i]:
-        gj = group[j]
-        if gi == gj:
-          item_degree[i] += 1
-          item_graph[j].append(i)
-        else:
-          group_degree[gi] += 1
-          group_graph[gj].append(gi)
+        Approach:
+            Assign unique group IDs to ungrouped items. Build intra-group and
+            inter-group dependency graphs. Topologically sort groups first, then
+            sort items within each group. Concatenate results in group order.
 
-    group_order = sort(group_degree, group_graph, range(n + m))
-    if not group_order:
-      return []
-    ans = []
-    for gi in group_order:
-      items = group_items[gi]
-      item_order = sort(item_degree, item_graph, items)
-      if len(items) != len(item_order):
-        return []
-      ans.extend(item_order)
-    return ans
+        Complexity:
+            Time: O(n + m + E) where E is total dependency edges
+            Space: O(n + m + E)
+        """
+
+        def topological_sort(
+            degree: list[int], graph: list[list[int]], items: range | list[int]
+        ) -> list[int]:
+            queue = deque(item for item in items if degree[item] == 0)
+            result: list[int] = []
+            while queue:
+                item = queue.popleft()
+                result.append(item)
+                for dependent in graph[item]:
+                    degree[dependent] -= 1
+                    if degree[dependent] == 0:
+                        queue.append(dependent)
+            return result if len(result) == len(items) else []
+
+        next_group_id = m
+        group_items: list[list[int]] = [[] for _ in range(n + m)]
+        for i, grp in enumerate(group):
+            if grp == -1:
+                group[i] = next_group_id
+                next_group_id += 1
+            group_items[group[i]].append(i)
+
+        item_degree = [0] * n
+        group_degree = [0] * (n + m)
+        item_graph: list[list[int]] = [[] for _ in range(n)]
+        group_graph: list[list[int]] = [[] for _ in range(n + m)]
+        for i, group_i in enumerate(group):
+            for j in before_items[i]:
+                group_j = group[j]
+                if group_i == group_j:
+                    item_degree[i] += 1
+                    item_graph[j].append(i)
+                else:
+                    group_degree[group_i] += 1
+                    group_graph[group_j].append(group_i)
+
+        group_order = topological_sort(group_degree, group_graph, range(n + m))
+        if not group_order:
+            return []
+        result: list[int] = []
+        for group_id in group_order:
+            items = group_items[group_id]
+            item_order = topological_sort(item_degree, item_graph, items)
+            if len(items) != len(item_order):
+                return []
+            result.extend(item_order)
+        return result

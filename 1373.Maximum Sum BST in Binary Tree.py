@@ -1,27 +1,57 @@
 from math import inf
-from typing import Optional
 
 
-# Definition for a binary tree node.
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
+    def __init__(
+        self,
+        val: int = 0,
+        left: "TreeNode | None" = None,
+        right: "TreeNode | None" = None,
+    ) -> None:
         self.val = val
         self.left = left
         self.right = right
-class Solution:
-  def maxSumBST(self, root: Optional[TreeNode]) -> int:
-    def search(root: Optional[TreeNode]) -> tuple:
-      if root is None:
-        return 1, inf, -inf, 0
-      lbst, lmi, lmx, ls = search(root.left)
-      rbst, rmi, rmx, rs = search(root.right)
-      if lbst and rbst and lmx < root.val < rmi:
-        nonlocal ans
-        s = ls + rs + root.val
-        ans = max(ans, s)
-        return 1, min(lmi, root.val), max(rmx, root.val), s
-      return 0, 0, 0, 0
 
-    ans = 0
-    search(root)
-    return ans
+
+class Solution:
+    def maxSumBST(self, root: TreeNode | None) -> int:
+        """Find the maximum sum of all keys in any BST subtree.
+
+        Intuition:
+            Post-order traversal lets us validate BST property bottom-up while
+            computing subtree sums, tracking the maximum valid BST sum.
+
+        Approach:
+            For each node, recursively obtain whether left and right subtrees
+            are valid BSTs along with their min, max, and sum values. If the
+            current subtree forms a valid BST, update the global maximum sum
+            and propagate the combined info upward.
+
+        Complexity:
+            Time: O(n) where n is the number of nodes.
+            Space: O(h) where h is the tree height.
+        """
+
+        def traverse(node: TreeNode | None) -> tuple[bool, float, float, int]:
+            if node is None:
+                return True, inf, -inf, 0
+
+            left_valid, left_min, left_max, left_sum = traverse(node.left)
+            right_valid, right_min, right_max, right_sum = traverse(node.right)
+
+            if left_valid and right_valid and left_max < node.val < right_min:
+                nonlocal max_sum
+                subtree_sum = left_sum + right_sum + node.val
+                max_sum = max(max_sum, subtree_sum)
+                return (
+                    True,
+                    min(left_min, node.val),
+                    max(right_max, node.val),
+                    subtree_sum,
+                )
+
+            return False, 0, 0, 0
+
+        max_sum = 0
+        traverse(root)
+        return max_sum

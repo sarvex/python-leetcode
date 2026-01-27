@@ -1,26 +1,65 @@
 from functools import cache
-from typing import List
 
 
 class Solution:
-  def ways(self, pizza: List[str], k: int) -> int:
-    @cache
-    def search(i: int, j: int, k: int) -> int:
-      if k == 0:
-        return int(s[m][n] - s[i][n] - s[m][j] + s[i][j] > 0)
-      ans = 0
-      for x in range(i + 1, m):
-        if s[x][n] - s[i][n] - s[x][j] + s[i][j] > 0:
-          ans += search(x, j, k - 1)
-      for y in range(j + 1, n):
-        if s[m][y] - s[i][y] - s[m][j] + s[i][j] > 0:
-          ans += search(i, y, k - 1)
-      return ans % mod
+    def ways(self, pizza: list[str], k: int) -> int:
+        """Count ways to cut pizza into k pieces each containing at least one apple.
 
-    mod = 10 ** 9 + 7
-    m, n = len(pizza), len(pizza[0])
-    s = [[0] * (n + 1) for _ in range(m + 1)]
-    for i, row in enumerate(pizza, 1):
-      for j, c in enumerate(row, 1):
-        s[i][j] = s[i - 1][j] + s[i][j - 1] - s[i - 1][j - 1] + int(c == 'A')
-    return search(0, 0, k - 1)
+        Intuition:
+            Use 2D prefix sums to quickly check if a rectangular region has
+            apples, then recursively try all horizontal and vertical cuts.
+
+        Approach:
+            Build a 2D prefix sum of apple counts. Use memoized recursion with
+            state (top-left corner row, column, remaining cuts). At each state,
+            try all horizontal cuts (varying row) and vertical cuts (varying
+            column), only proceeding if the cut-off piece has at least one apple.
+
+        Complexity:
+            Time: O(k * m * n * (m + n)) for states times cut choices
+            Space: O(k * m * n) for memoization
+        """
+        MOD = 10**9 + 7
+        rows, cols = len(pizza), len(pizza[0])
+        prefix = [[0] * (cols + 1) for _ in range(rows + 1)]
+        for row_idx, row in enumerate(pizza, 1):
+            for col_idx, char in enumerate(row, 1):
+                prefix[row_idx][col_idx] = (
+                    prefix[row_idx - 1][col_idx]
+                    + prefix[row_idx][col_idx - 1]
+                    - prefix[row_idx - 1][col_idx - 1]
+                    + int(char == "A")
+                )
+
+        @cache
+        def search(top: int, left: int, cuts_remaining: int) -> int:
+            if cuts_remaining == 0:
+                return int(
+                    prefix[rows][cols]
+                    - prefix[top][cols]
+                    - prefix[rows][left]
+                    + prefix[top][left]
+                    > 0
+                )
+            total = 0
+            for row_cut in range(top + 1, rows):
+                if (
+                    prefix[row_cut][cols]
+                    - prefix[top][cols]
+                    - prefix[row_cut][left]
+                    + prefix[top][left]
+                    > 0
+                ):
+                    total += search(row_cut, left, cuts_remaining - 1)
+            for col_cut in range(left + 1, cols):
+                if (
+                    prefix[rows][col_cut]
+                    - prefix[top][col_cut]
+                    - prefix[rows][left]
+                    + prefix[top][left]
+                    > 0
+                ):
+                    total += search(top, col_cut, cuts_remaining - 1)
+            return total % MOD
+
+        return search(0, 0, k - 1)

@@ -1,22 +1,42 @@
+from collections import deque
 from threading import Semaphore
 
 
-class BoundedBlockingQueue(object):
-    def __init__(self, capacity: int):
-        self.s1 = Semaphore(capacity)
-        self.s2 = Semaphore(0)
-        self.q = deque()
+class BoundedBlockingQueue:
+    """Thread-safe bounded blocking queue using semaphores.
+
+    Intuition:
+        Use two semaphores to block producers when full and consumers when
+        empty, ensuring thread-safe bounded access.
+
+    Approach:
+        One semaphore tracks available capacity (initialized to capacity),
+        the other tracks available items (initialized to 0). Enqueue acquires
+        capacity and releases items; dequeue does the reverse.
+
+    Complexity:
+        Time: O(1) per operation (excluding blocking wait)
+        Space: O(capacity)
+    """
+
+    def __init__(self, capacity: int) -> None:
+        self.capacity_semaphore = Semaphore(capacity)
+        self.item_semaphore = Semaphore(0)
+        self.queue: deque[int] = deque()
 
     def enqueue(self, element: int) -> None:
-        self.s1.acquire()
-        self.q.append(element)
-        self.s2.release()
+        """Add an element, blocking if queue is full."""
+        self.capacity_semaphore.acquire()
+        self.queue.append(element)
+        self.item_semaphore.release()
 
     def dequeue(self) -> int:
-        self.s2.acquire()
-        ans = self.q.popleft()
-        self.s1.release()
-        return ans
+        """Remove and return an element, blocking if queue is empty."""
+        self.item_semaphore.acquire()
+        result = self.queue.popleft()
+        self.capacity_semaphore.release()
+        return result
 
     def size(self) -> int:
-        return len(self.q)
+        """Return current number of elements in the queue."""
+        return len(self.queue)

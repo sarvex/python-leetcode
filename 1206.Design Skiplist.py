@@ -1,63 +1,85 @@
-class Node:
-  __slots__ = ['val', 'next']
+import random
 
-  def __init__(self, val: int, level: int):
-    self.val = val
-    self.next = [None] * level
+
+class SkiplistNode:
+    """Node in a skiplist with value and forward pointers."""
+
+    __slots__ = ["val", "next"]
+
+    def __init__(self, val: int, level: int) -> None:
+        self.val = val
+        self.next: list[SkiplistNode | None] = [None] * level
 
 
 class Skiplist:
-  max_level = 32
-  p = 0.25
+    """Skiplist implementation supporting search, add, and erase operations.
 
-  def __init__(self):
-    self.head = Node(-1, self.max_level)
-    self.level = 0
+    Intuition:
+        A skiplist provides probabilistic balancing through multiple levels of
+        linked lists, giving O(log n) expected time for search, insert, and delete.
 
-  def search(self, target: int) -> bool:
-    curr = self.head
-    for i in range(self.level - 1, -1, -1):
-      curr = self.find_closest(curr, i, target)
-      if curr.next[i] and curr.next[i].val == target:
-        return True
-    return False
+    Approach:
+        Maintain a head sentinel with max_level forward pointers. Each node has
+        a random level. Search, add, and erase traverse from the highest level
+        downward, finding the closest predecessor at each level.
 
-  def add(self, num: int) -> None:
-    curr = self.head
-    level = self.random_level()
-    node = Node(num, level)
-    self.level = max(self.level, level)
-    for i in range(self.level - 1, -1, -1):
-      curr = self.find_closest(curr, i, num)
-      if i < level:
-        node.next[i] = curr.next[i]
-        curr.next[i] = node
+    Complexity:
+        Time: O(log n) expected per operation
+        Space: O(n) expected
+    """
 
-  def erase(self, num: int) -> bool:
-    curr = self.head
-    ok = False
-    for i in range(self.level - 1, -1, -1):
-      curr = self.find_closest(curr, i, num)
-      if curr.next[i] and curr.next[i].val == num:
-        curr.next[i] = curr.next[i].next[i]
-        ok = True
-    while self.level > 1 and self.head.next[self.level - 1] is None:
-      self.level -= 1
-    return ok
+    MAX_LEVEL = 32
+    PROBABILITY = 0.25
 
-  def find_closest(self, curr: Node, level: int, target: int) -> Node:
-    while curr.next[level] and curr.next[level].val < target:
-      curr = curr.next[level]
-    return curr
+    def __init__(self) -> None:
+        self.head = SkiplistNode(-1, self.MAX_LEVEL)
+        self.level = 0
 
-  def random_level(self) -> int:
-    level = 1
-    while level < self.max_level and random.random() < self.p:
-      level += 1
-    return level
+    def search(self, target: int) -> bool:
+        """Return True if target exists in the skiplist."""
+        current = self.head
+        for i in range(self.level - 1, -1, -1):
+            current = self._find_closest(current, i, target)
+            if current.next[i] and current.next[i].val == target:
+                return True
+        return False
 
-# Your Skiplist object will be instantiated and called as such:
-# obj = Skiplist()
-# param_1 = obj.search(target)
-# obj.add(num)
-# param_3 = obj.erase(num)
+    def add(self, num: int) -> None:
+        """Insert num into the skiplist."""
+        current = self.head
+        new_level = self._random_level()
+        node = SkiplistNode(num, new_level)
+        self.level = max(self.level, new_level)
+        for i in range(self.level - 1, -1, -1):
+            current = self._find_closest(current, i, num)
+            if i < new_level:
+                node.next[i] = current.next[i]
+                current.next[i] = node
+
+    def erase(self, num: int) -> bool:
+        """Remove one occurrence of num. Return True if found."""
+        current = self.head
+        found = False
+        for i in range(self.level - 1, -1, -1):
+            current = self._find_closest(current, i, num)
+            if current.next[i] and current.next[i].val == num:
+                current.next[i] = current.next[i].next[i]
+                found = True
+        while self.level > 1 and self.head.next[self.level - 1] is None:
+            self.level -= 1
+        return found
+
+    def _find_closest(
+        self, current: SkiplistNode, level: int, target: int
+    ) -> SkiplistNode:
+        """Find the closest node before target at the given level."""
+        while current.next[level] and current.next[level].val < target:
+            current = current.next[level]
+        return current
+
+    def _random_level(self) -> int:
+        """Generate a random level for a new node."""
+        level = 1
+        while level < self.MAX_LEVEL and random.random() < self.PROBABILITY:
+            level += 1
+        return level

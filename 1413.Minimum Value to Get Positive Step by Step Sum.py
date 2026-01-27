@@ -1,7 +1,25 @@
+from math import inf
+
+
 class Solution:
-    def minStartValue(self, nums: List[int]) -> int:
-        s, t = 0, inf
+    def minStartValue(self, nums: list[int]) -> int:
+        """Find minimum positive start value so prefix sums stay positive.
+
+        Intuition:
+            The start value must offset the lowest prefix sum to keep the
+            running total at least 1.
+
+        Approach:
+            Compute the minimum prefix sum. The answer is max(1, 1 - min_prefix)
+            to ensure the running sum never drops below 1.
+
+        Complexity:
+            Time: O(n) single pass through nums
+            Space: O(1) auxiliary space
+        """
+        prefix_sum = 0
+        min_prefix = inf
         for num in nums:
-            s += num
-            t = min(t, s)
-        return max(1, 1 - t)
+            prefix_sum += num
+            min_prefix = min(min_prefix, prefix_sum)
+        return max(1, 1 - int(min_prefix))
