@@ -1,21 +1,31 @@
-# Definition for a binary tree node.
-# class TreeNode:
-#     def __init__(self, val=0, left=None, right=None):
-#         self.val = val
-#         self.left = left
-#         self.right = right
 class Solution:
-    def findTilt(self, root: TreeNode) -> int:
-        ans = 0
+    def findTilt(self, root: "TreeNode") -> int:
+        """Compute total tilt of a binary tree using post-order traversal.
 
-        def sum(root):
-            if root is None:
+        Intuition:
+            The tilt of a node is the absolute difference between the sum of
+            its left subtree and the sum of its right subtree. We accumulate
+            tilt while computing subtree sums bottom-up.
+
+        Approach:
+            1. Post-order DFS computes the subtree sum for each node.
+            2. At each node, add |left_sum - right_sum| to the total tilt.
+            3. Return the subtree sum (val + left_sum + right_sum) upward.
+
+        Complexity:
+            Time: O(n)
+            Space: O(h) where h is the height of the tree
+        """
+        answer = 0
+
+        def subtree_sum(node: "TreeNode | None") -> int:
+            if node is None:
                 return 0
-            nonlocal ans
-            left = sum(root.left)
-            right = sum(root.right)
-            ans += abs(left - right)
-            return root.val + left + right
+            nonlocal answer
+            left_sum = subtree_sum(node.left)
+            right_sum = subtree_sum(node.right)
+            answer += abs(left_sum - right_sum)
+            return node.val + left_sum + right_sum
 
-        sum(root)
-        return ans
+        subtree_sum(root)
+        return answer

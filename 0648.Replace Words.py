@@ -1,21 +1,21 @@
 class Trie:
-    def __init__(self):
-        self.children: List[Trie | None] = [None] * 26
+    def __init__(self) -> None:
+        self.children: list["Trie | None"] = [None] * 26
         self.ref: int = -1
 
-    def insert(self, w: str, i: int):
+    def insert(self, word: str, index: int) -> None:
         node = self
-        for c in w:
-            idx = ord(c) - ord("a")
+        for char in word:
+            idx = ord(char) - ord("a")
             if node.children[idx] is None:
                 node.children[idx] = Trie()
             node = node.children[idx]
-        node.ref = i
+        node.ref = index
 
-    def search(self, w: str) -> int:
+    def search(self, word: str) -> int:
         node = self
-        for c in w:
-            idx = ord(c) - ord("a")
+        for char in word:
+            idx = ord(char) - ord("a")
             if node.children[idx] is None:
                 return -1
             node = node.children[idx]
@@ -25,12 +25,27 @@ class Trie:
 
 
 class Solution:
-    def replaceWords(self, dictionary: List[str], sentence: str) -> str:
+    def replaceWords(self, dictionary: list[str], sentence: str) -> str:
+        """Trie-based root replacement finding shortest matching prefix.
+
+        Intuition:
+        Build a trie from dictionary roots. For each word in the sentence, search
+        the trie for the shortest matching prefix to replace it.
+
+        Approach:
+        1. Insert all dictionary roots into a trie, storing their index.
+        2. For each word in the sentence, search for the shortest prefix in the trie.
+        3. If found, replace the word with the root; otherwise keep the original.
+
+        Complexity:
+        Time: O(D + S) where D is total dictionary chars, S is total sentence chars
+        Space: O(D)
+        """
         trie = Trie()
-        for i, w in enumerate(dictionary):
-            trie.insert(w, i)
-        ans = []
-        for w in sentence.split():
-            idx = trie.search(w)
-            ans.append(dictionary[idx] if idx != -1 else w)
-        return " ".join(ans)
+        for i, word in enumerate(dictionary):
+            trie.insert(word, i)
+        result = []
+        for word in sentence.split():
+            idx = trie.search(word)
+            result.append(dictionary[idx] if idx != -1 else word)
+        return " ".join(result)

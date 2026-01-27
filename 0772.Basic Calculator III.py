@@ -1,26 +1,48 @@
+from collections import deque
+
+
 class Solution:
     def calculate(self, s: str) -> int:
-        def dfs(q):
-            num, sign, stk = 0, "+", []
-            while q:
-                c = q.popleft()
-                if c.isdigit():
-                    num = num * 10 + int(c)
-                if c == "(":
-                    num = dfs(q)
-                if c in "+-*/)" or not q:
+        """Recursive descent parsing with a deque for nested parentheses.
+
+        Intuition:
+            Process the expression left to right, using recursion to handle
+            parenthesized sub-expressions. A deque allows efficient character
+            consumption from the front.
+
+        Approach:
+            1. Convert the string to a deque for O(1) popleft
+            2. Use recursive DFS: when '(' is encountered, recurse to evaluate
+               the sub-expression until ')' is found
+            3. Track the current sign and apply +, -, *, / using a stack
+            4. Return the sum of the stack as the result
+
+        Complexity:
+            Time: O(n) where n is the string length
+            Space: O(n) for the deque and recursion stack
+        """
+
+        def dfs(queue: deque) -> int:
+            num, sign, stack = 0, "+", []
+            while queue:
+                char = queue.popleft()
+                if char.isdigit():
+                    num = num * 10 + int(char)
+                if char == "(":
+                    num = dfs(queue)
+                if char in "+-*/)" or not queue:
                     match sign:
                         case "+":
-                            stk.append(num)
+                            stack.append(num)
                         case "-":
-                            stk.append(-num)
+                            stack.append(-num)
                         case "*":
-                            stk.append(stk.pop() * num)
+                            stack.append(stack.pop() * num)
                         case "/":
-                            stk.append(int(stk.pop() / num))
-                    num, sign = 0, c
-                if c == ")":
+                            stack.append(int(stack.pop() / num))
+                    num, sign = 0, char
+                if char == ")":
                     break
-            return sum(stk)
+            return sum(stack)
 
-        return dfs(deque(s))
+        return dfs(deque(s))

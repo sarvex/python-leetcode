@@ -1,47 +1,55 @@
 class MyLinkedList:
-    def __init__(self):
+    """Singly linked list with dummy head for uniform insertion/deletion.
+
+    Intuition:
+        A dummy head node simplifies edge cases for operations at the head.
+        Maintaining a count allows O(1) bounds checking for index validity.
+
+    Approach:
+        1. Use a dummy head node so insertions and deletions at any index
+           follow the same pattern.
+        2. Track the count of elements for bounds checking.
+        3. For get/add/delete, traverse to the target position from the dummy.
+
+    Complexity:
+        Time: O(n) for get, addAtIndex, deleteAtIndex; O(1) for addAtHead
+        Space: O(n) for storing n elements
+    """
+
+    def __init__(self) -> None:
         self.dummy = ListNode()
-        self.cnt = 0
+        self.count = 0
 
     def get(self, index: int) -> int:
-        if index < 0 or index >= self.cnt:
+        if index < 0 or index >= self.count:
             return -1
-        cur = self.dummy.next
+        current = self.dummy.next
         for _ in range(index):
-            cur = cur.next
-        return cur.val
+            current = current.next
+        return current.val
 
     def addAtHead(self, val: int) -> None:
         self.addAtIndex(0, val)
 
     def addAtTail(self, val: int) -> None:
-        self.addAtIndex(self.cnt, val)
+        self.addAtIndex(self.count, val)
 
     def addAtIndex(self, index: int, val: int) -> None:
-        if index > self.cnt:
+        if index > self.count:
             return
-        pre = self.dummy
+        predecessor = self.dummy
         for _ in range(index):
-            pre = pre.next
-        pre.next = ListNode(val, pre.next)
-        self.cnt += 1
+            predecessor = predecessor.next
+        predecessor.next = ListNode(val, predecessor.next)
+        self.count += 1
 
     def deleteAtIndex(self, index: int) -> None:
-        if index >= self.cnt:
+        if index >= self.count:
             return
-        pre = self.dummy
+        predecessor = self.dummy
         for _ in range(index):
-            pre = pre.next
-        t = pre.next
-        pre.next = t.next
-        t.next = None
-        self.cnt -= 1
-
-
-# Your MyLinkedList object will be instantiated and called as such:
-# obj = MyLinkedList()
-# param_1 = obj.get(index)
-# obj.addAtHead(val)
-# obj.addAtTail(val)
-# obj.addAtIndex(index,val)
-# obj.deleteAtIndex(index)
+            predecessor = predecessor.next
+        target = predecessor.next
+        predecessor.next = target.next
+        target.next = None
+        self.count -= 1

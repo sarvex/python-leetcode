@@ -1,36 +1,61 @@
+from collections import deque
+from math import inf
+
+
 class Solution:
-    def shortestDistance(self, grid: List[List[int]]) -> int:
-        m, n = len(grid), len(grid[0])
-        q = deque()
-        total = 0
-        cnt = [[0] * n for _ in range(m)]
-        dist = [[0] * n for _ in range(m)]
-        for i in range(m):
-            for j in range(n):
+    def shortestDistance(self, grid: list[list[int]]) -> int:
+        """Multi-source BFS from each building to compute total distances.
+
+        Intuition:
+            BFS from every building to compute the distance to all reachable
+            empty cells. The answer is the empty cell reachable by all buildings
+            with the minimum total distance.
+
+        Approach:
+            1. For each building, run BFS to compute distances to all empty cells.
+            2. Accumulate distances and reachability counts for each empty cell.
+            3. Find the empty cell reachable by all buildings with minimum total distance.
+
+        Complexity:
+            Time: O(b * m * n) where b is number of buildings
+            Space: O(m * n) for distance and count matrices
+        """
+        rows, cols = len(grid), len(grid[0])
+        queue = deque()
+        building_count = 0
+        reach_count = [[0] * cols for _ in range(rows)]
+        total_dist = [[0] * cols for _ in range(rows)]
+        for i in range(rows):
+            for j in range(cols):
                 if grid[i][j] == 1:
-                    total += 1
-                    q.append((i, j))
-                    d = 0
-                    vis = set()
-                    while q:
-                        d += 1
-                        for _ in range(len(q)):
-                            r, c = q.popleft()
-                            for a, b in [[0, 1], [0, -1], [1, 0], [-1, 0]]:
-                                x, y = r + a, c + b
+                    building_count += 1
+                    queue.append((i, j))
+                    distance = 0
+                    visited: set[tuple[int, int]] = set()
+                    while queue:
+                        distance += 1
+                        for _ in range(len(queue)):
+                            row, col = queue.popleft()
+                            for delta_row, delta_col in [
+                                [0, 1],
+                                [0, -1],
+                                [1, 0],
+                                [-1, 0],
+                            ]:
+                                next_row, next_col = row + delta_row, col + delta_col
                                 if (
-                                    0 <= x < m
-                                    and 0 <= y < n
-                                    and grid[x][y] == 0
-                                    and (x, y) not in vis
+                                    0 <= next_row < rows
+                                    and 0 <= next_col < cols
+                                    and grid[next_row][next_col] == 0
+                                    and (next_row, next_col) not in visited
                                 ):
-                                    cnt[x][y] += 1
-                                    dist[x][y] += d
-                                    q.append((x, y))
-                                    vis.add((x, y))
-        ans = inf
-        for i in range(m):
-            for j in range(n):
-                if grid[i][j] == 0 and cnt[i][j] == total:
-                    ans = min(ans, dist[i][j])
-        return -1 if ans == inf else ans
+                                    reach_count[next_row][next_col] += 1
+                                    total_dist[next_row][next_col] += distance
+                                    queue.append((next_row, next_col))
+                                    visited.add((next_row, next_col))
+        min_distance = inf
+        for i in range(rows):
+            for j in range(cols):
+                if grid[i][j] == 0 and reach_count[i][j] == building_count:
+                    min_distance = min(min_distance, total_dist[i][j])
+        return -1 if min_distance == inf else min_distance

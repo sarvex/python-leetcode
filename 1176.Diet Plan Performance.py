@@ -1,13 +1,31 @@
+from itertools import accumulate
+
+
 class Solution:
     def dietPlanPerformance(
-        self, calories: List[int], k: int, lower: int, upper: int
+        self, calories: list[int], k: int, lower: int, upper: int
     ) -> int:
-        s = list(accumulate(calories, initial=0))
-        ans, n = 0, len(calories)
-        for i in range(n - k + 1):
-            t = s[i + k] - s[i]
-            if t < lower:
-                ans -= 1
-            elif t > upper:
-                ans += 1
-        return ans
+        """Evaluate diet plan performance using sliding window sums.
+
+        Intuition:
+            For each consecutive k-day window, compare the calorie sum against
+            lower and upper thresholds to accumulate points.
+
+        Approach:
+            Build a prefix sum array, then iterate over all windows of size k,
+            subtracting a point when below lower and adding one when above upper.
+
+        Complexity:
+            Time: O(n)
+            Space: O(n)
+        """
+        prefix = list(accumulate(calories, initial=0))
+        points = 0
+        total_days = len(calories)
+        for i in range(total_days - k + 1):
+            window_sum = prefix[i + k] - prefix[i]
+            if window_sum < lower:
+                points -= 1
+            elif window_sum > upper:
+                points += 1
+        return points

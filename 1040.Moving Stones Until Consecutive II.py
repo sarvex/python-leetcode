@@ -1,14 +1,36 @@
 class Solution:
-    def numMovesStonesII(self, stones: List[int]) -> List[int]:
+    def numMovesStonesII(self, stones: list[int]) -> list[int]:
+        """Moving Stones Until Consecutive II using sliding window.
+
+        Intuition:
+            The maximum moves use the larger of the two endpoint gaps. The
+            minimum moves use a sliding window of size n to find the densest
+            window, with a special case for near-consecutive arrangements.
+
+        Approach:
+            Sort stones. Maximum is max of (stones[-1] - stones[1] + 1,
+            stones[-2] - stones[0] + 1) minus (n-1). For minimum, slide a
+            window of size n over sorted positions. Handle the edge case where
+            n-1 stones are consecutive but one is isolated.
+
+        Complexity:
+            Time: O(n log n)
+            Space: O(1) excluding sort
+        """
         stones.sort()
-        mi = n = len(stones)
-        mx = max(stones[-1] - stones[1] + 1, stones[-2] - stones[0] + 1) - (n - 1)
-        i = 0
-        for j, x in enumerate(stones):
-            while x - stones[i] + 1 > n:
-                i += 1
-            if j - i + 1 == n - 1 and x - stones[i] == n - 2:
-                mi = min(mi, 2)
+        count = len(stones)
+        max_moves = max(
+            stones[-1] - stones[1] + 1,
+            stones[-2] - stones[0] + 1,
+        ) - (count - 1)
+        min_moves = count
+        left = 0
+        for right, position in enumerate(stones):
+            while position - stones[left] + 1 > count:
+                left += 1
+            window_size = right - left + 1
+            if window_size == count - 1 and position - stones[left] == count - 2:
+                min_moves = min(min_moves, 2)
             else:
-                mi = min(mi, n - (j - i + 1))
-        return [mi, mx]
+                min_moves = min(min_moves, count - window_size)
+        return [min_moves, max_moves]

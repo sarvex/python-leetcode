@@ -1,26 +1,43 @@
 class Trie:
     def __init__(self) -> None:
-        self.children = [None] * 26
+        self.children: list[Trie | None] = [None] * 26
 
 
 class Solution:
-    def minimumLengthEncoding(self, words: List[str]) -> int:
-        root = Trie()
-        for w in words:
-            cur = root
-            for c in w[::-1]:
-                idx = ord(c) - ord("a")
-                if cur.children[idx] == None:
-                    cur.children[idx] = Trie()
-                cur = cur.children[idx]
-        return self.dfs(root, 1)
+    def minimumLengthEncoding(self, words: list[str]) -> int:
+        """Trie-based encoding: insert reversed words and sum leaf depths.
 
-    def dfs(self, cur: Trie, l: int) -> int:
-        isLeaf, ans = True, 0
+        Intuition:
+            Words that are suffixes of other words share encoding. Building a
+            trie of reversed words groups suffixes together; only leaf nodes
+            contribute to the encoding length.
+
+        Approach:
+            1. Build a trie by inserting each word in reverse.
+            2. DFS the trie to find leaf nodes.
+            3. Sum (depth + 1) for each leaf (the +1 accounts for the '#' separator).
+
+        Complexity:
+            Time: O(sum of word lengths)
+            Space: O(sum of word lengths)
+        """
+        root = Trie()
+        for word in words:
+            current = root
+            for char in reversed(word):
+                idx = ord(char) - ord("a")
+                if current.children[idx] is None:
+                    current.children[idx] = Trie()
+                current = current.children[idx]
+        return self._count_leaf_depths(root, 1)
+
+    def _count_leaf_depths(self, node: Trie, depth: int) -> int:
+        is_leaf = True
+        total = 0
         for i in range(26):
-            if cur.children[i] != None:
-                isLeaf = False
-                ans += self.dfs(cur.children[i], l + 1)
-        if isLeaf:
-            ans += l
-        return ans
+            if node.children[i] is not None:
+                is_leaf = False
+                total += self._count_leaf_depths(node.children[i], depth + 1)
+        if is_leaf:
+            total += depth
+        return total

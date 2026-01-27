@@ -1,47 +1,40 @@
-# """
-# This is the interface that allows for creating nested lists.
-# You should not implement it, or speculate about its implementation
-# """
-# class NestedInteger:
-#    def isInteger(self) -> bool:
-#        """
-#        @return True if this NestedInteger holds a single integer, rather than a nested list.
-#        """
-#
-#    def getInteger(self) -> int:
-#        """
-#        @return the single integer that this NestedInteger holds, if it holds a single integer
-#        Return None if this NestedInteger holds a nested list
-#        """
-#
-#    def getList(self) -> [NestedInteger]:
-#        """
-#        @return the nested list that this NestedInteger holds, if it holds a nested list
-#        Return None if this NestedInteger holds a single integer
-#        """
-
-
 class NestedIterator:
-    def __init__(self, nestedList: [NestedInteger]):
-        def dfs(ls):
-            for x in ls:
-                if x.isInteger():
-                    self.nums.append(x.getInteger())
-                else:
-                    dfs(x.getList())
+    """Iterator that flattens a nested list of integers.
 
-        self.nums = []
-        self.i = -1
+    Intuition:
+        Pre-flatten the entire nested structure so that iteration becomes
+        a simple sequential scan over a flat list.
+
+    Approach:
+        Use DFS to recursively traverse the nested list. For each element,
+        if it is an integer, append it to the flat list; otherwise recurse
+        into its nested list. next() and hasNext() then operate on the
+        pre-built flat list using an index pointer.
+
+    Complexity:
+        Time: O(n) for initialization, O(1) per next and hasNext
+        Space: O(n) for the flattened list
+    """
+
+    def __init__(self, nestedList: list["NestedInteger"]) -> None:
+        """Flatten the nested list into a simple integer list."""
+
+        def dfs(items: list["NestedInteger"]) -> None:
+            for item in items:
+                if item.isInteger():
+                    self.nums.append(item.getInteger())
+                else:
+                    dfs(item.getList())
+
+        self.nums: list[int] = []
+        self.index = -1
         dfs(nestedList)
 
     def next(self) -> int:
-        self.i += 1
-        return self.nums[self.i]
+        """Return the next integer in the flattened sequence."""
+        self.index += 1
+        return self.nums[self.index]
 
     def hasNext(self) -> bool:
-        return self.i + 1 < len(self.nums)
-
-
-# Your NestedIterator object will be instantiated and called as such:
-# i, v = NestedIterator(nestedList), []
-# while i.hasNext(): v.append(i.next())
+        """Check if there are remaining integers."""
+        return self.index + 1 < len(self.nums)

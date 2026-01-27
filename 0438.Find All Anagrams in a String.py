@@ -1,14 +1,34 @@
+from collections import Counter
+
+
 class Solution:
-    def findAnagrams(self, s: str, p: str) -> List[int]:
-        m, n = len(s), len(p)
-        ans = []
-        if m < n:
-            return ans
-        cnt1 = Counter(p)
-        cnt2 = Counter(s[: n - 1])
-        for i in range(n - 1, m):
-            cnt2[s[i]] += 1
-            if cnt1 == cnt2:
-                ans.append(i - n + 1)
-            cnt2[s[i - n + 1]] -= 1
-        return ans
+    def findAnagrams(self, text: str, pattern: str) -> list[int]:
+        """Sliding window comparing character frequency counters.
+
+        Intuition:
+            A fixed-size window of length len(pattern) slides over text. If the
+            window's character frequencies match pattern's, it's an anagram.
+
+        Approach:
+            1. Count pattern frequencies.
+            2. Initialize a window counter with the first (n-1) characters.
+            3. Slide the window: add the new right character, compare counters,
+               then remove the leftmost character.
+            4. Collect matching start indices.
+
+        Complexity:
+            Time: O(m) where m is the length of text (counter comparison is O(26)).
+            Space: O(26) = O(1) for the character counters.
+        """
+        text_len, pattern_len = len(text), len(pattern)
+        result: list[int] = []
+        if text_len < pattern_len:
+            return result
+        pattern_count = Counter(pattern)
+        window_count = Counter(text[: pattern_len - 1])
+        for i in range(pattern_len - 1, text_len):
+            window_count[text[i]] += 1
+            if pattern_count == window_count:
+                result.append(i - pattern_len + 1)
+            window_count[text[i - pattern_len + 1]] -= 1
+        return result

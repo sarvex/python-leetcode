@@ -1,25 +1,38 @@
+from collections.abc import Callable
 from threading import Lock
 
 
 class TrafficLight:
-    def __init__(self):
+    """Traffic light controlled intersection using mutex.
+
+    Intuition:
+        Only one car can pass through the intersection at a time, and the light
+        must be switched when a car from a different road arrives.
+
+    Approach:
+        Use a lock to ensure mutual exclusion. Track the current green road and
+        only call turnGreen when the arriving car is on a different road.
+
+    Complexity:
+        Time: O(1) per carArrived call
+        Space: O(1)
+    """
+
+    def __init__(self) -> None:
         self.lock = Lock()
-        self.road = 1
+        self.current_road = 1
 
     def carArrived(
         self,
-        carId: int,  # ID of the car
-        # ID of the road the car travels on. Can be 1 (road A) or 2 (road B)
+        carId: int,
         roadId: int,
-        direction: int,  # Direction of the car
-        # Use turnGreen() to turn light to green on current road
-        turnGreen: 'Callable[[], None]',
-        # Use crossCar() to make car cross the intersection
-        crossCar: 'Callable[[], None]',
+        direction: int,
+        turnGreen: Callable[[], None],
+        crossCar: Callable[[], None],
     ) -> None:
         self.lock.acquire()
-        if self.road != roadId:
-            self.road = roadId
+        if self.current_road != roadId:
+            self.current_road = roadId
             turnGreen()
         crossCar()
         self.lock.release()

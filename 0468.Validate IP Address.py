@@ -1,24 +1,40 @@
 class Solution:
     def validIPAddress(self, queryIP: str) -> str:
-        def is_ipv4(s: str) -> bool:
-            ss = s.split(".")
-            if len(ss) != 4:
+        """Validate by checking IPv4 and IPv6 format rules.
+
+        Intuition:
+            An IP address is either IPv4 (4 decimal groups 0-255) or IPv6
+            (8 hex groups of 1-4 characters). Check each format separately.
+
+        Approach:
+            Split by '.' for IPv4 and ':' for IPv6. Validate each group
+            against the respective format constraints: no leading zeros for
+            IPv4, valid hex characters for IPv6.
+
+        Complexity:
+            Time: O(n) where n is the length of the input string
+            Space: O(n) for split results
+        """
+
+        def is_ipv4(address: str) -> bool:
+            segments = address.split(".")
+            if len(segments) != 4:
                 return False
-            for t in ss:
-                if len(t) > 1 and t[0] == "0":
+            for segment in segments:
+                if len(segment) > 1 and segment[0] == "0":
                     return False
-                if not t.isdigit() or not 0 <= int(t) <= 255:
+                if not segment.isdigit() or not 0 <= int(segment) <= 255:
                     return False
             return True
 
-        def is_ipv6(s: str) -> bool:
-            ss = s.split(":")
-            if len(ss) != 8:
+        def is_ipv6(address: str) -> bool:
+            segments = address.split(":")
+            if len(segments) != 8:
                 return False
-            for t in ss:
-                if not 1 <= len(t) <= 4:
+            for segment in segments:
+                if not 1 <= len(segment) <= 4:
                     return False
-                if not all(c in "0123456789abcdefABCDEF" for c in t):
+                if not all(char in "0123456789abcdefABCDEF" for char in segment):
                     return False
             return True
 

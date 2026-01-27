@@ -1,37 +1,57 @@
-# Definition for a binary tree node.
-# class TreeNode:
-#     def __init__(self, val=0, left=None, right=None):
-#         self.val = val
-#         self.left = left
-#         self.right = right
-class Solution:
-    def getAllElements(self, root1: TreeNode, root2: TreeNode) -> List[int]:
-        def dfs(root, t):
-            if root is None:
-                return
-            dfs(root.left, t)
-            t.append(root.val)
-            dfs(root.right, t)
+class TreeNode:
+    def __init__(
+        self,
+        val: int = 0,
+        left: "TreeNode | None" = None,
+        right: "TreeNode | None" = None,
+    ) -> None:
+        self.val = val
+        self.left = left
+        self.right = right
 
-        def merge(t1, t2):
-            ans = []
+
+class Solution:
+    def getAllElements(
+        self, root1: TreeNode | None, root2: TreeNode | None
+    ) -> list[int]:
+        """Merge all elements from two BSTs into a sorted list.
+
+        Intuition:
+            Inorder traversal of each BST produces a sorted list; merge the two
+            sorted lists in linear time.
+
+        Approach:
+            Perform inorder DFS on both trees to get sorted lists, then merge them
+            using a two-pointer technique.
+
+        Complexity:
+            Time: O(m + n)
+            Space: O(m + n)
+        """
+
+        def inorder(node: TreeNode | None, result: list[int]) -> None:
+            if node is None:
+                return
+            inorder(node.left, result)
+            result.append(node.val)
+            inorder(node.right, result)
+
+        def merge(first: list[int], second: list[int]) -> list[int]:
+            merged: list[int] = []
             i = j = 0
-            while i < len(t1) and j < len(t2):
-                if t1[i] <= t2[j]:
-                    ans.append(t1[i])
+            while i < len(first) and j < len(second):
+                if first[i] <= second[j]:
+                    merged.append(first[i])
                     i += 1
                 else:
-                    ans.append(t2[j])
+                    merged.append(second[j])
                     j += 1
-            while i < len(t1):
-                ans.append(t1[i])
-                i += 1
-            while j < len(t2):
-                ans.append(t2[j])
-                j += 1
-            return ans
+            merged.extend(first[i:])
+            merged.extend(second[j:])
+            return merged
 
-        t1, t2 = [], []
-        dfs(root1, t1)
-        dfs(root2, t2)
-        return merge(t1, t2)
+        sorted_first: list[int] = []
+        sorted_second: list[int] = []
+        inorder(root1, sorted_first)
+        inorder(root2, sorted_second)
+        return merge(sorted_first, sorted_second)

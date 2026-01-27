@@ -1,23 +1,34 @@
-"""
-# Definition for a Node.
-class Node:
-    def __init__(self, val=None, children=None):
-        self.val = val
-        self.children = children
-"""
+from collections import deque
 
 
 class Solution:
-    def levelOrder(self, root: 'Node') -> List[List[int]]:
-        ans = []
+    def levelOrder(self, root: "Node") -> list[list[int]]:
+        """BFS level-order traversal of an N-ary tree.
+
+        Intuition:
+            Use a queue to process nodes level by level, collecting values
+            at each depth before moving to the next.
+
+        Approach:
+            1. If root is None, return an empty list.
+            2. Initialize a queue with the root node.
+            3. For each level, dequeue all current nodes, record their values,
+               and enqueue their children.
+            4. Append each level's values to the result.
+
+        Complexity:
+            Time: O(n) where n is the number of nodes.
+            Space: O(n) for the queue in the worst case.
+        """
+        result: list[list[int]] = []
         if root is None:
-            return ans
-        q = deque([root])
-        while q:
-            t = []
-            for _ in range(len(q)):
-                root = q.popleft()
-                t.append(root.val)
-                q.extend(root.children)
-            ans.append(t)
-        return ans
+            return result
+        queue = deque([root])
+        while queue:
+            level_values: list[int] = []
+            for _ in range(len(queue)):
+                node = queue.popleft()
+                level_values.append(node.val)
+                queue.extend(node.children)
+            result.append(level_values)
+        return result

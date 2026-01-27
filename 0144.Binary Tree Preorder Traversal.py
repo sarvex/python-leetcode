@@ -1,18 +1,29 @@
-# Definition for a binary tree node.
-# class TreeNode:
-#     def __init__(self, val=0, left=None, right=None):
-#         self.val = val
-#         self.left = left
-#         self.right = right
 class Solution:
-    def preorderTraversal(self, root: Optional[TreeNode]) -> List[int]:
-        def dfs(root):
-            if root is None:
-                return
-            ans.append(root.val)
-            dfs(root.left)
-            dfs(root.right)
+    def preorderTraversal(self, root: TreeNode | None) -> list[int]:
+        """Recursive DFS preorder traversal (root, left, right).
 
-        ans = []
+        Intuition:
+            Preorder visits the root first, then recursively visits left and
+            right subtrees. A simple recursive DFS collects values in order.
+
+        Approach:
+            1. Initialize a result list.
+            2. Define a recursive helper that appends the node value, then
+               recurses on left and right children.
+            3. Return the collected result.
+
+        Complexity:
+            Time: O(n)
+            Space: O(n) — result list plus O(h) recursion stack
+        """
+
+        def dfs(node: TreeNode | None) -> None:
+            if node is None:
+                return
+            result.append(node.val)
+            dfs(node.left)
+            dfs(node.right)
+
+        result = []
         dfs(root)
-        return ans
+        return result

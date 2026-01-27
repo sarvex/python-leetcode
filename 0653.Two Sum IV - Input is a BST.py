@@ -1,18 +1,29 @@
-# Definition for a binary tree node.
-# class TreeNode:
-#     def __init__(self, val=0, left=None, right=None):
-#         self.val = val
-#         self.left = left
-#         self.right = right
 class Solution:
-    def findTarget(self, root: Optional[TreeNode], k: int) -> bool:
-        def dfs(root):
-            if root is None:
-                return False
-            if k - root.val in vis:
-                return True
-            vis.add(root.val)
-            return dfs(root.left) or dfs(root.right)
+    def findTarget(self, root: "TreeNode | None", k: int) -> bool:
+        """DFS with hash set to find two nodes summing to target in BST.
 
-        vis = set()
+        Intuition:
+        Traverse the tree and for each node check if its complement (k - val)
+        has been seen before, similar to the classic two-sum approach.
+
+        Approach:
+        1. Use DFS to traverse the tree.
+        2. For each node, check if k - node.val exists in a visited set.
+        3. If found, return True; otherwise add node.val to the set.
+        4. Recurse on both subtrees.
+
+        Complexity:
+        Time: O(n)
+        Space: O(n)
+        """
+
+        def dfs(node: "TreeNode | None") -> bool:
+            if node is None:
+                return False
+            if k - node.val in visited:
+                return True
+            visited.add(node.val)
+            return dfs(node.left) or dfs(node.right)
+
+        visited: set[int] = set()
         return dfs(root)

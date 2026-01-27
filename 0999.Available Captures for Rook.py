@@ -1,17 +1,34 @@
+from itertools import pairwise
+
+
 class Solution:
-    def numRookCaptures(self, board: List[List[str]]) -> int:
-        ans = 0
-        dirs = (-1, 0, 1, 0, -1)
-        for i in range(8):
-            for j in range(8):
-                if board[i][j] == "R":
-                    for a, b in pairwise(dirs):
-                        x, y = i, j
-                        while 0 <= x + a < 8 and 0 <= y + b < 8:
-                            x, y = x + a, y + b
-                            if board[x][y] == "p":
-                                ans += 1
+    def numRookCaptures(self, board: list[list[str]]) -> int:
+        """Count the number of pawns a rook can capture on a chess board.
+
+        Intuition:
+            Find the rook then scan in all four cardinal directions. A pawn is
+            capturable if no bishop blocks the path.
+
+        Approach:
+            Locate the rook, then for each direction walk until reaching a pawn
+            (count it) or a bishop (stop). Use a direction array for conciseness.
+
+        Complexity:
+            Time: O(64) constant since the board is always 8×8
+            Space: O(1)
+        """
+        captures = 0
+        directions = (-1, 0, 1, 0, -1)
+        for row in range(8):
+            for col in range(8):
+                if board[row][col] == "R":
+                    for delta_row, delta_col in pairwise(directions):
+                        r, c = row, col
+                        while 0 <= r + delta_row < 8 and 0 <= c + delta_col < 8:
+                            r, c = r + delta_row, c + delta_col
+                            if board[r][c] == "p":
+                                captures += 1
                                 break
-                            if board[x][y] == "B":
+                            if board[r][c] == "B":
                                 break
-        return ans
+        return captures

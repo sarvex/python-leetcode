@@ -1,27 +1,45 @@
+from collections import deque
+
+
 class MyStack:
-    def __init__(self):
-        self.q1 = deque()
-        self.q2 = deque()
+    """Stack implementation using two queues.
+
+    Intuition:
+        A queue is FIFO while a stack is LIFO. By reversing the order of
+        elements after each push, the front of the queue always holds the
+        most recently pushed element.
+
+    Approach:
+        On push, add the new element to the secondary queue, then drain all
+        elements from the primary queue into the secondary queue. Swap the
+        two queues so that primary always has stack order. Pop and top
+        simply operate on the front of the primary queue.
+
+    Complexity:
+        Time: O(n) per push, O(1) per pop, top, and empty
+        Space: O(n) for storing all elements across two queues
+    """
+
+    def __init__(self) -> None:
+        """Initialize two internal queues."""
+        self.primary: deque[int] = deque()
+        self.secondary: deque[int] = deque()
 
     def push(self, x: int) -> None:
-        self.q2.append(x)
-        while self.q1:
-            self.q2.append(self.q1.popleft())
-        self.q1, self.q2 = self.q2, self.q1
+        """Push element onto the stack."""
+        self.secondary.append(x)
+        while self.primary:
+            self.secondary.append(self.primary.popleft())
+        self.primary, self.secondary = self.secondary, self.primary
 
     def pop(self) -> int:
-        return self.q1.popleft()
+        """Remove and return the top element."""
+        return self.primary.popleft()
 
     def top(self) -> int:
-        return self.q1[0]
+        """Return the top element without removing it."""
+        return self.primary[0]
 
     def empty(self) -> bool:
-        return len(self.q1) == 0
-
-
-# Your MyStack object will be instantiated and called as such:
-# obj = MyStack()
-# obj.push(x)
-# param_2 = obj.pop()
-# param_3 = obj.top()
-# param_4 = obj.empty()
+        """Return whether the stack is empty."""
+        return len(self.primary) == 0

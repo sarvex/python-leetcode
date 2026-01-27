@@ -4,15 +4,29 @@ sys.setrecursionlimit(100000)
 
 
 class Solution:
-    def maxProduct(self, root) -> int:
-        sums = []
+    def maxProduct(self, root: TreeNode | None) -> int:
+        """Maximize the product of sums of two subtrees after removing one edge.
 
-        def dfs(node):
+        Intuition:
+            Removing an edge splits the tree into two parts. The product is
+            subtree_sum * (total - subtree_sum). Maximize over all edges.
+
+        Approach:
+            First DFS to compute the total sum while collecting all subtree sums.
+            Then find the subtree sum that maximizes s * (total - s).
+
+        Complexity:
+            Time: O(n)
+            Space: O(n)
+        """
+        subtree_sums: list[int] = []
+
+        def dfs(node: TreeNode | None) -> int:
             if not node:
                 return 0
-            s = node.val + dfs(node.left) + dfs(node.right)
-            sums.append(s)
-            return s
+            total = node.val + dfs(node.left) + dfs(node.right)
+            subtree_sums.append(total)
+            return total
 
-        total = dfs(root)
-        return max(s * (total - s) for s in sums) % 1000000007
+        tree_total = dfs(root)
+        return max(s * (tree_total - s) for s in subtree_sums) % (10**9 + 7)

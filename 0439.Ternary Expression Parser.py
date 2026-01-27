@@ -1,21 +1,40 @@
 class Solution:
     def parseTernary(self, expression: str) -> str:
-        stk = []
-        cond = False
-        for c in expression[::-1]:
-            if c == ':':
+        """Stack-based right-to-left evaluation of nested ternary expressions.
+
+        Intuition:
+            Processing from right to left, values are pushed onto a stack.
+            When a '?' is encountered, the next character is the condition
+            that determines which of the two stacked values to keep.
+
+        Approach:
+            1. Traverse the expression from right to left.
+            2. Skip ':' characters.
+            3. On '?', set a flag indicating the next character is a condition.
+            4. When the condition is read, pop two values and keep the correct one
+               based on whether the condition is 'T' or 'F'.
+            5. Otherwise, push the character onto the stack.
+
+        Complexity:
+            Time: O(n) where n is the length of the expression.
+            Space: O(n) for the stack.
+        """
+        stack: list[str] = []
+        is_condition = False
+        for char in expression[::-1]:
+            if char == ":":
                 continue
-            if c == '?':
-                cond = True
+            if char == "?":
+                is_condition = True
             else:
-                if cond:
-                    if c == 'T':
-                        x = stk.pop()
-                        stk.pop()
-                        stk.append(x)
+                if is_condition:
+                    if char == "T":
+                        true_value = stack.pop()
+                        stack.pop()
+                        stack.append(true_value)
                     else:
-                        stk.pop()
-                    cond = False
+                        stack.pop()
+                    is_condition = False
                 else:
-                    stk.append(c)
-        return stk[0]
+                    stack.append(char)
+        return stack[0]

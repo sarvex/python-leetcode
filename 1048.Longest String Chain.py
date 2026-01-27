@@ -1,24 +1,40 @@
 class Solution:
-    def longestStrChain(self, words: List[str]) -> int:
-        def check(w1, w2):
-            if len(w2) - len(w1) != 1:
-                return False
-            i = j = cnt = 0
-            while i < len(w1) and j < len(w2):
-                if w1[i] != w2[j]:
-                    cnt += 1
-                else:
-                    i += 1
-                j += 1
-            return cnt < 2 and i == len(w1)
+    def longestStrChain(self, words: list[str]) -> int:
+        """Longest String Chain using DP with predecessor check.
 
-        n = len(words)
-        dp = [1] * (n + 1)
-        words.sort(key=lambda x: len(x))
-        res = 1
-        for i in range(1, n):
+        Intuition:
+            Sort words by length so predecessors always appear before their
+            successors. Then use DP to find the longest chain.
+
+        Approach:
+            Sort by length. For each word, check all previous words as
+            potential predecessors (differ by exactly one character insertion).
+            Use a two-pointer comparison to verify the predecessor relationship.
+
+        Complexity:
+            Time: O(n^2 * L) where L is max word length
+            Space: O(n)
+        """
+
+        def is_predecessor(shorter: str, longer: str) -> bool:
+            if len(longer) - len(shorter) != 1:
+                return False
+            si = li = mismatches = 0
+            while si < len(shorter) and li < len(longer):
+                if shorter[si] != longer[li]:
+                    mismatches += 1
+                else:
+                    si += 1
+                li += 1
+            return mismatches < 2 and si == len(shorter)
+
+        count = len(words)
+        chain_length = [1] * (count + 1)
+        words.sort(key=len)
+        result = 1
+        for i in range(1, count):
             for j in range(i):
-                if check(words[j], words[i]):
-                    dp[i] = max(dp[i], dp[j] + 1)
-            res = max(res, dp[i])
-        return res
+                if is_predecessor(words[j], words[i]):
+                    chain_length[i] = max(chain_length[i], chain_length[j] + 1)
+            result = max(result, chain_length[i])
+        return result

@@ -1,18 +1,40 @@
-class Solution:
-    def removeBoxes(self, boxes: List[int]) -> int:
-        @cache
-        def dfs(i, j, k):
-            if i > j:
-                return 0
-            while i < j and boxes[j] == boxes[j - 1]:
-                j, k = j - 1, k + 1
-            ans = dfs(i, j - 1, 0) + (k + 1) * (k + 1)
-            for h in range(i, j):
-                if boxes[h] == boxes[j]:
-                    ans = max(ans, dfs(h + 1, j - 1, 0) + dfs(i, h, k + 1))
-            return ans
+from functools import cache
 
-        n = len(boxes)
-        ans = dfs(0, n - 1, 0)
+
+class Solution:
+    def removeBoxes(self, boxes: list[int]) -> int:
+        """Interval DP with memoization on box removal for maximum points.
+
+        Intuition:
+            When removing boxes, grouping same-colored boxes together yields
+            more points (k+1)^2 vs multiple smaller removals. We need to
+            consider merging non-adjacent same-colored boxes.
+
+        Approach:
+            Use top-down DP with state (left, right, streak) where streak
+            counts consecutive same-colored boxes attached to boxes[right].
+            Either remove the right group or find matching boxes to merge with.
+
+        Complexity:
+            Time: O(n^4)
+            Space: O(n^3)
+        """
+
+        @cache
+        def dfs(left: int, right: int, streak: int) -> int:
+            if left > right:
+                return 0
+            while left < right and boxes[right] == boxes[right - 1]:
+                right, streak = right - 1, streak + 1
+            result = dfs(left, right - 1, 0) + (streak + 1) * (streak + 1)
+            for mid in range(left, right):
+                if boxes[mid] == boxes[right]:
+                    result = max(
+                        result, dfs(mid + 1, right - 1, 0) + dfs(left, mid, streak + 1)
+                    )
+            return result
+
+        length = len(boxes)
+        answer = dfs(0, length - 1, 0)
         dfs.cache_clear()
-        return ans
+        return answer

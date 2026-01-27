@@ -1,48 +1,64 @@
 class Solution:
-    def hasValidPath(self, grid: List[List[int]]) -> bool:
-        m, n = len(grid), len(grid[0])
-        p = list(range(m * n))
+    def hasValidPath(self, grid: list[list[int]]) -> bool:
+        """Check if a valid path exists from top-left to bottom-right.
 
-        def find(x):
-            if p[x] != x:
-                p[x] = find(p[x])
-            return p[x]
+        Intuition:
+            Use Union-Find to connect cells that share a valid street
+            connection based on their street types.
 
-        def left(i, j):
-            if j > 0 and grid[i][j - 1] in (1, 4, 6):
-                p[find(i * n + j)] = find(i * n + j - 1)
+        Approach:
+            For each cell, determine which directions its street type connects
+            to (left, right, up, down). Union adjacent cells if both street
+            types allow the connection. Finally check if top-left and
+            bottom-right are in the same connected component.
 
-        def right(i, j):
-            if j < n - 1 and grid[i][j + 1] in (1, 3, 5):
-                p[find(i * n + j)] = find(i * n + j + 1)
+        Complexity:
+            Time: O(m * n * α(m * n)) with path compression
+            Space: O(m * n) for the parent array
+        """
+        rows, cols = len(grid), len(grid[0])
+        parent = list(range(rows * cols))
 
-        def up(i, j):
-            if i > 0 and grid[i - 1][j] in (2, 3, 4):
-                p[find(i * n + j)] = find((i - 1) * n + j)
+        def find(x: int) -> int:
+            if parent[x] != x:
+                parent[x] = find(parent[x])
+            return parent[x]
 
-        def down(i, j):
-            if i < m - 1 and grid[i + 1][j] in (2, 5, 6):
-                p[find(i * n + j)] = find((i + 1) * n + j)
+        def connect_left(row: int, col: int) -> None:
+            if col > 0 and grid[row][col - 1] in (1, 4, 6):
+                parent[find(row * cols + col)] = find(row * cols + col - 1)
 
-        for i in range(m):
-            for j in range(n):
-                e = grid[i][j]
-                if e == 1:
-                    left(i, j)
-                    right(i, j)
-                elif e == 2:
-                    up(i, j)
-                    down(i, j)
-                elif e == 3:
-                    left(i, j)
-                    down(i, j)
-                elif e == 4:
-                    right(i, j)
-                    down(i, j)
-                elif e == 5:
-                    left(i, j)
-                    up(i, j)
+        def connect_right(row: int, col: int) -> None:
+            if col < cols - 1 and grid[row][col + 1] in (1, 3, 5):
+                parent[find(row * cols + col)] = find(row * cols + col + 1)
+
+        def connect_up(row: int, col: int) -> None:
+            if row > 0 and grid[row - 1][col] in (2, 3, 4):
+                parent[find(row * cols + col)] = find((row - 1) * cols + col)
+
+        def connect_down(row: int, col: int) -> None:
+            if row < rows - 1 and grid[row + 1][col] in (2, 5, 6):
+                parent[find(row * cols + col)] = find((row + 1) * cols + col)
+
+        for row in range(rows):
+            for col in range(cols):
+                street = grid[row][col]
+                if street == 1:
+                    connect_left(row, col)
+                    connect_right(row, col)
+                elif street == 2:
+                    connect_up(row, col)
+                    connect_down(row, col)
+                elif street == 3:
+                    connect_left(row, col)
+                    connect_down(row, col)
+                elif street == 4:
+                    connect_right(row, col)
+                    connect_down(row, col)
+                elif street == 5:
+                    connect_left(row, col)
+                    connect_up(row, col)
                 else:
-                    right(i, j)
-                    up(i, j)
-        return find(0) == find(m * n - 1)
+                    connect_right(row, col)
+                    connect_up(row, col)
+        return find(0) == find(rows * cols - 1)

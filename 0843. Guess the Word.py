@@ -1,43 +1,38 @@
-from typing import List
-
-
-# """
-# This is Master's API interface.
-# You should not implement it, or speculate about its implementation
-# """
-# class Master:
-#     def guess(self, word: str) -> int:
 class Solution:
-  def findSecretWord(self, words: List[str], master: 'Master') -> None:
-    freq_at_positions = []
-    for i in range(6):
-      pos_count = {}
-      for word in words:
-        if (word[i] in pos_count):
-          pos_count[word[i]] += 1
-        else:
-          pos_count[word[i]] = 1
-      freq_at_positions.append(pos_count)
+    def findSecretWord(self, words: list[str], master: "Master") -> None:
+        """Frequency-based word selection with elimination.
 
-    def calc_score(w):
-      s = 0
-      for i in range(len(w)):
-        s += freq_at_positions[i][w[i]]
-      return s
+        Intuition:
+            Choose the word with highest character-position frequency score
+            to maximize information gain, then eliminate non-matching candidates.
 
-    words.sort(key=lambda word: calc_score(word))
+        Approach:
+            1. Compute character frequency at each position across all words.
+            2. Score each word by summing its characters' frequencies.
+            3. Guess the highest-scoring word, then filter candidates by match count.
 
-    def find_common_sum(w1, w2):
-      common_sum = 0
-      for i in range(6):
-        if (w1[i] == w2[i]): common_sum += 1
-      return common_sum
+        Complexity:
+            Time: O(n^2) in the worst case for filtering
+            Space: O(n)
+        """
+        position_frequencies: list[dict[str, int]] = []
+        for pos in range(6):
+            freq: dict[str, int] = {}
+            for word in words:
+                freq[word[pos]] = freq.get(word[pos], 0) + 1
+            position_frequencies.append(freq)
 
-    while (len(words) > 0):
-      word = words.pop()
-      matches = master.guess(word)
+        def compute_score(word: str) -> int:
+            return sum(position_frequencies[i][word[i]] for i in range(len(word)))
 
-      if (matches == 6):
-        break
-      else:
-        words = [w for w in words if matches == find_common_sum(w, word)]
+        def count_common_chars(word1: str, word2: str) -> int:
+            return sum(word1[i] == word2[i] for i in range(6))
+
+        words.sort(key=compute_score)
+
+        while len(words) > 0:
+            candidate = words.pop()
+            matches = master.guess(candidate)
+            if matches == 6:
+                break
+            words = [w for w in words if matches == count_common_chars(w, candidate)]

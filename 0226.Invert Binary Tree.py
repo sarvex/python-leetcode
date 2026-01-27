@@ -1,17 +1,27 @@
-# Definition for a binary tree node.
-# class TreeNode:
-#     def __init__(self, val=0, left=None, right=None):
-#         self.val = val
-#         self.left = left
-#         self.right = right
 class Solution:
-    def invertTree(self, root: Optional[TreeNode]) -> Optional[TreeNode]:
-        def dfs(root):
-            if root is None:
+    def invertTree(self, root: TreeNode | None) -> TreeNode | None:
+        """Recursive DFS to swap left and right children at every node.
+
+        Intuition:
+            Inverting a binary tree means swapping left and right subtrees
+            at every node, which naturally fits a recursive approach.
+
+        Approach:
+            1. If the node is None, return.
+            2. Swap its left and right children.
+            3. Recursively invert both subtrees.
+
+        Complexity:
+            Time: O(n)
+            Space: O(h) where h is the tree height (recursion stack)
+        """
+
+        def dfs(node: TreeNode | None) -> None:
+            if node is None:
                 return
-            root.left, root.right = root.right, root.left
-            dfs(root.left)
-            dfs(root.right)
+            node.left, node.right = node.right, node.left
+            dfs(node.left)
+            dfs(node.right)
 
         dfs(root)
         return root

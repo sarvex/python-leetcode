@@ -1,6 +1,24 @@
 class MyCircularQueue:
-    def __init__(self, k: int):
-        self.q = [0] * k
+    """Circular queue implementation using a fixed-size array with front pointer and size tracking.
+
+    Intuition:
+        Use a fixed array with modular arithmetic to wrap around, tracking
+        the front index and current size to efficiently manage enqueue and
+        dequeue operations.
+
+    Approach:
+        1. Maintain an array of size k, a front pointer, and a size counter.
+        2. Enqueue inserts at (front + size) % capacity and increments size.
+        3. Dequeue advances front by one modulo capacity and decrements size.
+        4. Front and Rear are computed from front pointer and current size.
+
+    Complexity:
+        Time: O(1) for all operations
+        Space: O(k)
+    """
+
+    def __init__(self, k: int) -> None:
+        self.queue = [0] * k
         self.front = 0
         self.size = 0
         self.capacity = k
@@ -9,7 +27,7 @@ class MyCircularQueue:
         if self.isFull():
             return False
         idx = (self.front + self.size) % self.capacity
-        self.q[idx] = value
+        self.queue[idx] = value
         self.size += 1
         return True
 
@@ -21,26 +39,16 @@ class MyCircularQueue:
         return True
 
     def Front(self) -> int:
-        return -1 if self.isEmpty() else self.q[self.front]
+        return -1 if self.isEmpty() else self.queue[self.front]
 
     def Rear(self) -> int:
         if self.isEmpty():
             return -1
         idx = (self.front + self.size - 1) % self.capacity
-        return self.q[idx]
+        return self.queue[idx]
 
     def isEmpty(self) -> bool:
         return self.size == 0
 
     def isFull(self) -> bool:
         return self.size == self.capacity
-
-
-# Your MyCircularQueue object will be instantiated and called as such:
-# obj = MyCircularQueue(k)
-# param_1 = obj.enQueue(value)
-# param_2 = obj.deQueue()
-# param_3 = obj.Front()
-# param_4 = obj.Rear()
-# param_5 = obj.isEmpty()
-# param_6 = obj.isFull()

@@ -1,20 +1,39 @@
 class Solution:
-    def canPartitionKSubsets(self, nums: List[int], k: int) -> bool:
-        def dfs(i):
-            if i == len(nums):
+    def canPartitionKSubsets(self, nums: list[int], k: int) -> bool:
+        """Backtracking with pruning to partition array into k equal-sum subsets.
+
+        Intuition:
+            Try to fill k buckets each with target sum. Sorting in descending
+            order and skipping duplicate bucket states prunes the search space.
+
+        Approach:
+            1. Compute target sum per bucket. Return False if total isn't
+               divisible by k.
+            2. Sort descending so larger numbers are placed first for early
+               pruning.
+            3. Use backtracking: try placing each number into a bucket. Skip
+               buckets with the same current sum to avoid duplicate states.
+
+        Complexity:
+            Time: O(k^n) worst case with pruning significantly reducing this
+            Space: O(n + k) for recursion stack and bucket array
+        """
+
+        def dfs(index: int) -> bool:
+            if index == len(nums):
                 return True
-            for j in range(k):
-                if j and cur[j] == cur[j - 1]:
+            for bucket in range(k):
+                if bucket and buckets[bucket] == buckets[bucket - 1]:
                     continue
-                cur[j] += nums[i]
-                if cur[j] <= s and dfs(i + 1):
+                buckets[bucket] += nums[index]
+                if buckets[bucket] <= target and dfs(index + 1):
                     return True
-                cur[j] -= nums[i]
+                buckets[bucket] -= nums[index]
             return False
 
-        s, mod = divmod(sum(nums), k)
-        if mod:
+        target, remainder = divmod(sum(nums), k)
+        if remainder:
             return False
-        cur = [0] * k
+        buckets = [0] * k
         nums.sort(reverse=True)
         return dfs(0)

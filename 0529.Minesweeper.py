@@ -1,21 +1,37 @@
 class Solution:
-    def updateBoard(self, board: List[List[str]], click: List[int]) -> List[List[str]]:
-        def dfs(i: int, j: int):
-            cnt = 0
-            for x in range(i - 1, i + 2):
-                for y in range(j - 1, j + 2):
-                    if 0 <= x < m and 0 <= y < n and board[x][y] == "M":
-                        cnt += 1
-            if cnt:
-                board[i][j] = str(cnt)
+    def updateBoard(self, board: list[list[str]], click: list[int]) -> list[list[str]]:
+        """DFS to reveal cells in Minesweeper game.
+
+        Intuition:
+            If clicking a mine, mark it. Otherwise, count adjacent mines.
+            If no adjacent mines, recursively reveal neighbors.
+
+        Approach:
+            On clicking an empty cell, count adjacent mines. If count > 0,
+            set the digit. Otherwise, mark as blank and DFS into all
+            unrevealed neighbors.
+
+        Complexity:
+            Time: O(m * n)
+            Space: O(m * n) for recursion stack
+        """
+
+        def dfs(row: int, col: int) -> None:
+            mine_count = 0
+            for x in range(row - 1, row + 2):
+                for y in range(col - 1, col + 2):
+                    if 0 <= x < rows and 0 <= y < cols and board[x][y] == "M":
+                        mine_count += 1
+            if mine_count:
+                board[row][col] = str(mine_count)
             else:
-                board[i][j] = "B"
-                for x in range(i - 1, i + 2):
-                    for y in range(j - 1, j + 2):
-                        if 0 <= x < m and 0 <= y < n and board[x][y] == "E":
+                board[row][col] = "B"
+                for x in range(row - 1, row + 2):
+                    for y in range(col - 1, col + 2):
+                        if 0 <= x < rows and 0 <= y < cols and board[x][y] == "E":
                             dfs(x, y)
 
-        m, n = len(board), len(board[0])
+        rows, cols = len(board), len(board[0])
         i, j = click
         if board[i][j] == "M":
             board[i][j] = "X"

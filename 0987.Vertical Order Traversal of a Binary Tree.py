@@ -1,31 +1,47 @@
-from typing import Optional, List
-
-
-# Definition for a binary tree node.
 class TreeNode:
-  def __init__(self, val=0, left=None, right=None):
-    self.val = val
-    self.left = left
-    self.right = right
+    def __init__(
+        self,
+        val: int = 0,
+        left: "TreeNode | None" = None,
+        right: "TreeNode | None" = None,
+    ):
+        self.val = val
+        self.left = left
+        self.right = right
 
 
 class Solution:
-  def verticalTraversal(self, root: Optional[TreeNode]) -> List[List[int]]:
-    def dfs(root: Optional[TreeNode], i: int, j: int):
-      if root is None:
-        return
-      nodes.append((j, i, root.val))
-      dfs(root.left, i + 1, j - 1)
-      dfs(root.right, i + 1, j + 1)
+    def verticalTraversal(self, root: TreeNode | None) -> list[list[int]]:
+        """Return vertical order traversal of a binary tree.
 
-    nodes = []
-    dfs(root, 0, 0)
-    nodes.sort()
-    ans = []
-    prev = -2000
-    for j, _, val in nodes:
-      if prev != j:
-        ans.append([])
-        prev = j
-      ans[-1].append(val)
-    return ans
+        Intuition:
+            Assign column and row indices to each node via DFS, then sort by
+            column, row, and value to produce the correct ordering.
+
+        Approach:
+            DFS to collect (column, row, value) tuples. Sort the tuples, then
+            group consecutive nodes with the same column index into sublists.
+
+        Complexity:
+            Time: O(n log n) for sorting all nodes
+            Space: O(n) to store all node tuples
+        """
+
+        def dfs(node: TreeNode | None, row: int, col: int) -> None:
+            if node is None:
+                return
+            nodes.append((col, row, node.val))
+            dfs(node.left, row + 1, col - 1)
+            dfs(node.right, row + 1, col + 1)
+
+        nodes: list[tuple[int, int, int]] = []
+        dfs(root, 0, 0)
+        nodes.sort()
+        result: list[list[int]] = []
+        prev_col = -2000
+        for col, _, val in nodes:
+            if prev_col != col:
+                result.append([])
+                prev_col = col
+            result[-1].append(val)
+        return result

@@ -1,16 +1,35 @@
-class HitCounter:
+from bisect import bisect_left
 
-    def __init__(self):
-        self.ts = []
+
+class HitCounter:
+    """Hit counter that counts hits in the past 5 minutes (300 seconds)."""
+
+    def __init__(self) -> None:
+        """Initialize the hit counter with an empty timestamp list."""
+        self.timestamps: list[int] = []
 
     def hit(self, timestamp: int) -> None:
-        self.ts.append(timestamp)
+        """Record a hit at the given timestamp.
+
+        Complexity:
+            Time: O(1)
+            Space: O(1) amortized
+        """
+        self.timestamps.append(timestamp)
 
     def getHits(self, timestamp: int) -> int:
-        return len(self.ts) - bisect_left(self.ts, timestamp - 300 + 1)
+        """Return the number of hits in the past 300 seconds.
 
+        Intuition:
+            Since timestamps are monotonically increasing, use binary search
+            to find the earliest valid timestamp in the window.
 
-# Your HitCounter object will be instantiated and called as such:
-# obj = HitCounter()
-# obj.hit(timestamp)
-# param_2 = obj.getHits(timestamp)
+        Approach:
+            Use bisect_left to find the index of the first timestamp within
+            the 300-second window. The count is total length minus that index.
+
+        Complexity:
+            Time: O(log n)
+            Space: O(1)
+        """
+        return len(self.timestamps) - bisect_left(self.timestamps, timestamp - 300 + 1)

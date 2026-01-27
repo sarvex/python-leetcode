@@ -4,13 +4,31 @@
 #         self.val = val
 #         self.left = left
 #         self.right = right
+
+
 class Solution:
-    def isValidSequence(self, root: TreeNode, arr: List[int]) -> bool:
-        def dfs(root, u):
-            if root is None or root.val != arr[u]:
+    def isValidSequence(self, root: TreeNode, arr: list[int]) -> bool:
+        """Check if array matches a root-to-leaf path in binary tree.
+
+        Intuition:
+            DFS traversal comparing each node value with the corresponding
+            array element at that depth.
+
+        Approach:
+            Recursively traverse the tree tracking the current index in the
+            array. At each node, verify the value matches. At a leaf, check
+            that the entire array has been consumed.
+
+        Complexity:
+            Time: O(n) where n is the number of nodes
+            Space: O(h) where h is the tree height for recursion stack
+        """
+
+        def dfs(node: TreeNode | None, index: int) -> bool:
+            if node is None or node.val != arr[index]:
                 return False
-            if u == len(arr) - 1:
-                return root.left is None and root.right is None
-            return dfs(root.left, u + 1) or dfs(root.right, u + 1)
+            if index == len(arr) - 1:
+                return node.left is None and node.right is None
+            return dfs(node.left, index + 1) or dfs(node.right, index + 1)
 
         return dfs(root, 0)

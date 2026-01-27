@@ -1,23 +1,38 @@
-# Definition for a binary tree node.
-# class TreeNode:
-#     def __init__(self, val=0, left=None, right=None):
-#         self.val = val
-#         self.left = left
-#         self.right = right
+from math import inf
+
+
 class Solution:
-    def closestValue(self, root: Optional[TreeNode], target: float) -> int:
-        def dfs(node: Optional[TreeNode]):
+    def closestValue(self, root: TreeNode | None, target: float) -> int:
+        """BST traversal following the target direction to find the closest value.
+
+        Intuition:
+            Exploit BST properties to navigate toward the target, updating the
+            closest value whenever a nearer node is found.
+
+        Approach:
+            1. Use recursive DFS starting from the root.
+            2. At each node, compute the distance to target and update the answer
+               if this node is closer (or equal distance but smaller value).
+            3. Navigate left or right based on whether target is smaller or larger
+               than the current node value.
+
+        Complexity:
+            Time: O(h) where h is the height of the tree
+            Space: O(h) for the recursion stack
+        """
+
+        def dfs(node: TreeNode | None) -> None:
             if node is None:
                 return
-            nxt = abs(target - node.val)
-            nonlocal ans, diff
-            if nxt < diff or (nxt == diff and node.val < ans):
-                diff = nxt
-                ans = node.val
+            distance = abs(target - node.val)
+            nonlocal closest_val, min_diff
+            if distance < min_diff or (distance == min_diff and node.val < closest_val):
+                min_diff = distance
+                closest_val = node.val
             node = node.left if target < node.val else node.right
             dfs(node)
 
-        ans = 0
-        diff = inf
+        closest_val = 0
+        min_diff = inf
         dfs(root)
-        return ans
+        return closest_val

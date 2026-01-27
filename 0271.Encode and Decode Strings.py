@@ -1,23 +1,36 @@
 class Codec:
-    def encode(self, strs: List[str]) -> str:
-        """Encodes a list of strings to a single string."""
-        ans = []
-        for s in strs:
-            ans.append("{:4}".format(len(s)) + s)
-        return "".join(ans)
+    """Encode and decode a list of strings using length-prefixed format.
 
-    def decode(self, s: str) -> List[str]:
-        """Decodes a single string to a list of strings."""
-        ans = []
-        i, n = 0, len(s)
-        while i < n:
-            size = int(s[i : i + 4])
-            i += 4
-            ans.append(s[i : i + size])
-            i += size
-        return ans
+    Intuition:
+        By prefixing each string with its length, we can unambiguously
+        reconstruct the original list without worrying about delimiters
+        appearing within the strings themselves.
 
+    Approach:
+        Encode each string by prepending a fixed-width 4-digit length prefix,
+        then concatenate all prefixed strings. To decode, repeatedly read the
+        4-character length prefix, extract the corresponding substring, and
+        advance the read position.
 
-# Your Codec object will be instantiated and called as such:
-# codec = Codec()
-# codec.decode(codec.encode(strs))
+    Complexity:
+        Time: O(n) for both encode and decode where n is total character count
+        Space: O(n) for the encoded/decoded output
+    """
+
+    def encode(self, strs: list[str]) -> str:
+        """Encode a list of strings to a single string."""
+        parts: list[str] = []
+        for string in strs:
+            parts.append(f"{len(string):4}{string}")
+        return "".join(parts)
+
+    def decode(self, s: str) -> list[str]:
+        """Decode a single string back to a list of strings."""
+        result: list[str] = []
+        index, length = 0, len(s)
+        while index < length:
+            size = int(s[index : index + 4])
+            index += 4
+            result.append(s[index : index + size])
+            index += size
+        return result

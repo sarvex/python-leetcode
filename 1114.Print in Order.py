@@ -1,19 +1,39 @@
+import threading
+from collections.abc import Callable
+
+
 class Foo:
-    def __init__(self):
-        self.l2 = threading.Lock()
-        self.l3 = threading.Lock()
-        self.l2.acquire()
-        self.l3.acquire()
+    """Ensure three methods execute in order using locks.
 
-    def first(self, printFirst: 'Callable[[], None]') -> None:
-        printFirst()
-        self.l2.release()
+    Intuition:
+        Use locks to enforce sequential execution regardless of thread
+        scheduling order.
 
-    def second(self, printSecond: 'Callable[[], None]') -> None:
-        self.l2.acquire()
-        printSecond()
-        self.l3.release()
+    Approach:
+        Initialize two locks in acquired state. The first method releases
+        lock2 after executing, the second waits on lock2 then releases
+        lock3, and the third waits on lock3.
 
-    def third(self, printThird: 'Callable[[], None]') -> None:
-        self.l3.acquire()
-        printThird()
+    Complexity:
+        Time: O(1) per method call
+        Space: O(1) for the two locks
+    """
+
+    def __init__(self) -> None:
+        self.lock_second = threading.Lock()
+        self.lock_third = threading.Lock()
+        self.lock_second.acquire()
+        self.lock_third.acquire()
+
+    def first(self, print_first: Callable[[], None]) -> None:
+        print_first()
+        self.lock_second.release()
+
+    def second(self, print_second: Callable[[], None]) -> None:
+        self.lock_second.acquire()
+        print_second()
+        self.lock_third.release()
+
+    def third(self, print_third: Callable[[], None]) -> None:
+        self.lock_third.acquire()
+        print_third()

@@ -1,21 +1,38 @@
+from collections import defaultdict
+from functools import cache
+
+
 class Solution:
     def leadsToDestination(
-        self, n: int, edges: List[List[int]], source: int, destination: int
+        self, n: int, edges: list[list[int]], source: int, destination: int
     ) -> bool:
-        @cache
-        def dfs(i):
-            if i == destination:
-                return not g[i]
-            if i in vis or not g[i]:
-                return False
-            vis.add(i)
-            for j in g[i]:
-                if not dfs(j):
-                    return False
-            return True
+        """Check if all paths from source lead to destination.
 
-        g = defaultdict(list)
-        for a, b in edges:
-            g[a].append(b)
-        vis = set()
+        Intuition:
+            DFS from source; every path must end at destination with no outgoing
+            edges, and cycles must not exist.
+
+        Approach:
+            Build adjacency list. Use DFS with cycle detection (visited set).
+            A node is valid if it's the destination with no outgoing edges, or
+            all its neighbors are valid.
+
+        Complexity:
+            Time: O(V + E)
+            Space: O(V + E) for graph and recursion
+        """
+
+        @cache
+        def dfs(node: int) -> bool:
+            if node == destination:
+                return not graph[node]
+            if node in visited or not graph[node]:
+                return False
+            visited.add(node)
+            return all(dfs(neighbor) for neighbor in graph[node])
+
+        graph = defaultdict(list)
+        for src, dst in edges:
+            graph[src].append(dst)
+        visited: set[int] = set()
         return dfs(source)

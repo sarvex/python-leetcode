@@ -1,18 +1,36 @@
+from collections import deque
+
+
 class Solution:
-    def countSteppingNumbers(self, low: int, high: int) -> List[int]:
-        ans = []
+    def countSteppingNumbers(self, low: int, high: int) -> list[int]:
+        """Stepping numbers in a given range using BFS.
+
+        Intuition:
+            A stepping number has adjacent digits differing by exactly 1. We can
+            generate them level by level starting from single digits using BFS.
+
+        Approach:
+            Start BFS from digits 1-9. For each number, append digits that differ
+            by 1 from the last digit. Collect numbers within [low, high]. Handle
+            zero as a special case.
+
+        Complexity:
+            Time: O(2^d) where d is the number of digits in high
+            Space: O(2^d) for the BFS queue
+        """
+        result: list[int] = []
         if low == 0:
-            ans.append(0)
-        q = deque(range(1, 10))
-        while q:
-            v = q.popleft()
-            if v > high:
+            result.append(0)
+        queue: deque[int] = deque(range(1, 10))
+        while queue:
+            value = queue.popleft()
+            if value > high:
                 break
-            if v >= low:
-                ans.append(v)
-            x = v % 10
-            if x:
-                q.append(v * 10 + x - 1)
-            if x < 9:
-                q.append(v * 10 + x + 1)
-        return ans
+            if value >= low:
+                result.append(value)
+            last_digit = value % 10
+            if last_digit:
+                queue.append(value * 10 + last_digit - 1)
+            if last_digit < 9:
+                queue.append(value * 10 + last_digit + 1)
+        return result

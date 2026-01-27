@@ -1,49 +1,39 @@
-# Below is the interface for Iterator, which is already defined for you.
-#
-# class Iterator:
-#     def __init__(self, nums):
-#         """
-#         Initializes an iterator object to the beginning of a list.
-#         :type nums: List[int]
-#         """
-#
-#     def hasNext(self):
-#         """
-#         Returns true if the iteration has more elements.
-#         :rtype: bool
-#         """
-#
-#     def next(self):
-#         """
-#         Returns the next element in the iteration.
-#         :rtype: int
-#         """
-
-
 class PeekingIterator:
-    def __init__(self, iterator):
-        """
-        Initialize your data structure here.
-        :type iterator: Iterator
-        """
+    """Iterator wrapper that supports peeking at the next element without consuming it.
+
+    Intuition:
+        Cache one element ahead so that peek can return it without advancing
+        the underlying iterator, and next can return the cached value when
+        available.
+
+    Approach:
+        Maintain a flag indicating whether an element has been peeked and a
+        variable storing the peeked value. On peek(), if not already peeked,
+        advance the underlying iterator and cache the result. On next(),
+        return the cached value if peeked, otherwise delegate to the
+        underlying iterator. hasNext() returns True if either a value is
+        cached or the underlying iterator has more elements.
+
+    Complexity:
+        Time: O(1) per peek, next, and hasNext
+        Space: O(1) extra for the cached element
+    """
+
+    def __init__(self, iterator: "Iterator") -> None:
+        """Initialize with an underlying iterator."""
         self.iterator = iterator
         self.has_peeked = False
-        self.peeked_element = None
+        self.peeked_element: int | None = None
 
-    def peek(self):
-        """
-        Returns the next element in the iteration without advancing the iterator.
-        :rtype: int
-        """
+    def peek(self) -> int:
+        """Return the next element without advancing the iterator."""
         if not self.has_peeked:
             self.peeked_element = self.iterator.next()
             self.has_peeked = True
         return self.peeked_element
 
-    def next(self):
-        """
-        :rtype: int
-        """
+    def next(self) -> int:
+        """Return the next element and advance the iterator."""
         if not self.has_peeked:
             return self.iterator.next()
         result = self.peeked_element
@@ -51,15 +41,6 @@ class PeekingIterator:
         self.peeked_element = None
         return result
 
-    def hasNext(self):
-        """
-        :rtype: bool
-        """
+    def hasNext(self) -> bool:
+        """Return True if the iterator has more elements."""
         return self.has_peeked or self.iterator.hasNext()
-
-
-# Your PeekingIterator object will be instantiated and called as such:
-# iter = PeekingIterator(Iterator(nums))
-# while iter.hasNext():
-#     val = iter.peek()   # Get the next element but not advance the iterator.
-#     iter.next()         # Should return the same value as [val].

@@ -1,21 +1,38 @@
 class Solution:
-    def kthSmallest(self, matrix: List[List[int]], k: int) -> int:
-        def check(matrix, mid, k, n):
+    def kthSmallest(self, matrix: list[list[int]], k: int) -> int:
+        """Find kth smallest element in sorted matrix using binary search on value.
+
+        Intuition:
+            The matrix is sorted row-wise and column-wise. Binary search on the
+            value range and count elements less than or equal to the mid value.
+
+        Approach:
+            Binary search between the smallest (top-left) and largest (bottom-right)
+            elements. For each mid value, count elements <= mid by starting from
+            the bottom-left corner and moving right when the value is <= mid or
+            up when it exceeds mid. Narrow the search range based on the count.
+
+        Complexity:
+            Time: O(n * log(max - min))
+            Space: O(1)
+        """
+
+        def count_no_greater_than(mid: int) -> bool:
             count = 0
-            i, j = n - 1, 0
-            while i >= 0 and j < n:
-                if matrix[i][j] <= mid:
-                    count += i + 1
-                    j += 1
+            row, col = size - 1, 0
+            while row >= 0 and col < size:
+                if matrix[row][col] <= mid:
+                    count += row + 1
+                    col += 1
                 else:
-                    i -= 1
+                    row -= 1
             return count >= k
 
-        n = len(matrix)
-        left, right = matrix[0][0], matrix[n - 1][n - 1]
+        size = len(matrix)
+        left, right = matrix[0][0], matrix[size - 1][size - 1]
         while left < right:
             mid = (left + right) >> 1
-            if check(matrix, mid, k, n):
+            if count_no_greater_than(mid):
                 right = mid
             else:
                 left = mid + 1

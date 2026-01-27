@@ -1,25 +1,36 @@
-# Definition for a binary tree node.
-# class TreeNode:
-#     def __init__(self, val=0, left=None, right=None):
-#         self.val = val
-#         self.left = left
-#         self.right = right
 class Solution:
-    def printTree(self, root: Optional[TreeNode]) -> List[List[str]]:
-        def height(root):
-            if root is None:
+    def printTree(self, root: "TreeNode | None") -> list[list[str]]:
+        """DFS to compute tree height and place values in a grid layout.
+
+        Intuition:
+        First determine the tree height to compute grid dimensions. Then place
+        each node value at its correct row and column using DFS with offsets.
+
+        Approach:
+        1. Compute tree height using recursive DFS.
+        2. Create a grid of (height+1) rows and (2^(height+1) - 1) columns.
+        3. Place root at the center column of the first row.
+        4. For each node, place children offset by 2^(height - row - 1).
+
+        Complexity:
+        Time: O(n)
+        Space: O(2^h * h) for the output grid
+        """
+
+        def height(node: "TreeNode | None") -> int:
+            if node is None:
                 return -1
-            return 1 + max(height(root.left), height(root.right))
+            return 1 + max(height(node.left), height(node.right))
 
-        def dfs(root, r, c):
-            if root is None:
+        def dfs(node: "TreeNode | None", row: int, col: int) -> None:
+            if node is None:
                 return
-            ans[r][c] = str(root.val)
-            dfs(root.left, r + 1, c - 2 ** (h - r - 1))
-            dfs(root.right, r + 1, c + 2 ** (h - r - 1))
+            grid[row][col] = str(node.val)
+            dfs(node.left, row + 1, col - 2 ** (tree_height - row - 1))
+            dfs(node.right, row + 1, col + 2 ** (tree_height - row - 1))
 
-        h = height(root)
-        m, n = h + 1, 2 ** (h + 1) - 1
-        ans = [[""] * n for _ in range(m)]
-        dfs(root, 0, (n - 1) // 2)
-        return ans
+        tree_height = height(root)
+        rows, cols = tree_height + 1, 2 ** (tree_height + 1) - 1
+        grid = [[""] * cols for _ in range(rows)]
+        dfs(root, 0, (cols - 1) // 2)
+        return grid

@@ -1,19 +1,30 @@
-# Definition for a binary tree node.
-# class TreeNode:
-#     def __init__(self, val=0, left=None, right=None):
-#         self.val = val
-#         self.left = left
-#         self.right = right
+from collections import deque
+
+
 class Solution:
-    def findBottomLeftValue(self, root: Optional[TreeNode]) -> int:
-        q = deque([root])
-        ans = 0
-        while q:
-            ans = q[0].val
-            for _ in range(len(q)):
-                node = q.popleft()
+    def findBottomLeftValue(self, root: TreeNode | None) -> int:
+        """BFS level-order traversal to find the leftmost value in the last row.
+
+        Intuition:
+            The bottom-left value is the first node of the last level in a
+            level-order traversal.
+
+        Approach:
+            Perform BFS. At the start of each level, record the first node's
+            value. After traversal completes, the last recorded value is the answer.
+
+        Complexity:
+            Time: O(n)
+            Space: O(n)
+        """
+        queue = deque([root])
+        result = 0
+        while queue:
+            result = queue[0].val
+            for _ in range(len(queue)):
+                node = queue.popleft()
                 if node.left:
-                    q.append(node.left)
+                    queue.append(node.left)
                 if node.right:
-                    q.append(node.right)
-        return ans
+                    queue.append(node.right)
+        return result

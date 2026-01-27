@@ -1,42 +1,66 @@
 class Solution:
-  def findGoodStrings(self, n: int, s1: str, s2: str, evil: str) -> int:
-    p = 10 ** 9 + 7
-    ord_a = ord('a')
-    l = len(evil)
-    dup = []
-    for i in range(1, l):
-      if evil[i:] == evil[:l - i]:
-        dup.append(i)
-    lend = len(dup)
+    def findGoodStrings(self, n: int, s1: str, s2: str, evil: str) -> int:
+        """Count good strings in range [s1, s2] that do not contain evil.
 
-    def count(s):
-      tmp_ct = 0
-      bd = 1
-      ind = n
-      without_s = []
-      for i in range(n):
-        tmp_ct *= 26
-        if bd:
-          tmp_ct += ord(s[i]) - ord_a
-        if i >= l - 1 and ind > i - l and evil < s[i - l + 1:i + 1]:
-          tmp_ct -= 1
-        if i >= l:
-          tmp_ct -= without_s[i - l]
-        if i >= l - 1:
-          if s[i - l + 1:i + 1] == evil:
-            bd = 0
-            ind = i
-        tmp_ct %= p
-        tmp_with_s = 0
-        for j in range(lend):
-          d = dup[j]
-          if i >= d:
-            tmp_with_s += without_s[i - d]
-          if i >= d - 1 and ind > i - d and evil[:d] < s[i - d + 1:i + 1]:
-            tmp_with_s += 1
-        without_s.append(tmp_ct - tmp_with_s)
-      return tmp_ct, bd
+        Intuition:
+            Use digit DP to count strings up to a bound that do not contain
+            the evil substring, then subtract counts to get the range.
 
-    str_ct1, bd1 = count(s1)
-    str_ct2, bd2 = count(s2)
-    return (str_ct2 - str_ct1 + bd2) % p
+        Approach:
+            Define a counting function that computes how many strings up to
+            a given bound avoid the evil substring. Use suffix matching
+            (KMP-like overlap tracking) to efficiently detect evil occurrences.
+            Final answer is count(s2) - count(s1) + (s2 is valid).
+
+        Complexity:
+            Time: O(n * len(evil)) for each bound computation
+            Space: O(n) for the auxiliary arrays
+        """
+        modulus = 10**9 + 7
+        ord_a = ord("a")
+        evil_length = len(evil)
+        overlaps: list[int] = []
+        for i in range(1, evil_length):
+            if evil[i:] == evil[: evil_length - i]:
+                overlaps.append(i)
+        overlap_count = len(overlaps)
+
+        def count_up_to(bound: str) -> tuple[int, int]:
+            running_count = 0
+            is_bounded = 1
+            boundary_index = n
+            without_evil: list[int] = []
+            for i in range(n):
+                running_count *= 26
+                if is_bounded:
+                    running_count += ord(bound[i]) - ord_a
+                if (
+                    i >= evil_length - 1
+                    and boundary_index > i - evil_length
+                    and evil < bound[i - evil_length + 1 : i + 1]
+                ):
+                    running_count -= 1
+                if i >= evil_length:
+                    running_count -= without_evil[i - evil_length]
+                if i >= evil_length - 1:
+                    if bound[i - evil_length + 1 : i + 1] == evil:
+                        is_bounded = 0
+                        boundary_index = i
+                running_count %= modulus
+                with_evil_count = 0
+                for j in range(overlap_count):
+                    offset = overlaps[j]
+                    if i >= offset:
+                        with_evil_count += without_evil[i - offset]
+                    if (
+                        i >= offset - 1
+                        and boundary_index > i - offset
+                        and evil[:offset] < bound[i - offset + 1 : i + 1]
+                    ):
+                        with_evil_count += 1
+                without_evil.append(running_count - with_evil_count)
+            return running_count, is_bounded
+
+        count1, _ = count_up_to(s1)
+        count2, is_s2_valid = count_up_to(s2)
+        return (count2 - count1 + is_s2_valid) % modulus

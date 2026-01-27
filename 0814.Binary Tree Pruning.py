@@ -1,11 +1,21 @@
-# Definition for a binary tree node.
-# class TreeNode:
-#     def __init__(self, val=0, left=None, right=None):
-#         self.val = val
-#         self.left = left
-#         self.right = right
 class Solution:
-    def pruneTree(self, root: Optional[TreeNode]) -> Optional[TreeNode]:
+    def pruneTree(self, root: TreeNode | None) -> TreeNode | None:
+        """Recursively prune subtrees that contain no 1s.
+
+        Intuition:
+            Post-order traversal: prune children first, then check if the
+            current node has value 0 with no children — if so, prune it.
+
+        Approach:
+            1. Recursively prune left and right subtrees.
+            2. If the current node's value is 0 and both children are None,
+               return None to remove it.
+            3. Otherwise, return the node.
+
+        Complexity:
+            Time: O(n)
+            Space: O(h) where h = tree height
+        """
         if root is None:
             return None
         root.left = self.pruneTree(root.left)

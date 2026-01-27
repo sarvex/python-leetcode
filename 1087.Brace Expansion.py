@@ -1,32 +1,48 @@
 class Solution:
-    def expand(self, s: str) -> List[str]:
-        def convert(s):
-            if not s:
+    def expand(self, s: str) -> list[str]:
+        """Generate all words from a brace expansion string in sorted order.
+
+        Intuition:
+            Parse brace groups into option lists, then generate all combinations
+            via backtracking.
+
+        Approach:
+            Parse the string into groups of character options (braces yield
+            multiple choices, plain text yields single choices). Use DFS to
+            enumerate all combinations and sort the result.
+
+        Complexity:
+            Time: O(k^n * n) where k = max options per group, n = groups
+            Space: O(k^n * n) for storing all results
+        """
+
+        def parse(text: str) -> None:
+            if not text:
                 return
-            if s[0] == '{':
-                j = s.find('}')
-                items.append(s[1:j].split(','))
-                convert(s[j + 1 :])
+            if text[0] == "{":
+                closing = text.find("}")
+                groups.append(text[1:closing].split(","))
+                parse(text[closing + 1 :])
             else:
-                j = s.find('{')
-                if j != -1:
-                    items.append(s[:j].split(','))
-                    convert(s[j:])
+                opening = text.find("{")
+                if opening != -1:
+                    groups.append(text[:opening].split(","))
+                    parse(text[opening:])
                 else:
-                    items.append(s.split(','))
+                    groups.append(text.split(","))
 
-        def dfs(i, t):
-            if i == len(items):
-                ans.append(''.join(t))
+        def dfs(depth: int, path: list[str]) -> None:
+            if depth == len(groups):
+                result.append("".join(path))
                 return
-            for c in items[i]:
-                t.append(c)
-                dfs(i + 1, t)
-                t.pop()
+            for char in groups[depth]:
+                path.append(char)
+                dfs(depth + 1, path)
+                path.pop()
 
-        items = []
-        convert(s)
-        ans = []
+        groups: list[list[str]] = []
+        parse(s)
+        result: list[str] = []
         dfs(0, [])
-        ans.sort()
-        return ans
+        result.sort()
+        return result

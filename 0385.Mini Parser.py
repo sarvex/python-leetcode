@@ -1,59 +1,34 @@
-# """
-# This is the interface that allows for creating nested lists.
-# You should not implement it, or speculate about its implementation
-# """
-# class NestedInteger:
-#    def __init__(self, value=None):
-#        """
-#        If value is not specified, initializes an empty list.
-#        Otherwise initializes a single integer equal to value.
-#        """
-#
-#    def isInteger(self):
-#        """
-#        @return True if this NestedInteger holds a single integer, rather than a nested list.
-#        :rtype bool
-#        """
-#
-#    def add(self, elem):
-#        """
-#        Set this NestedInteger to hold a nested list and adds a nested integer elem to it.
-#        :rtype void
-#        """
-#
-#    def setInteger(self, value):
-#        """
-#        Set this NestedInteger to hold a single integer equal to value.
-#        :rtype void
-#        """
-#
-#    def getInteger(self):
-#        """
-#        @return the single integer that this NestedInteger holds, if it holds a single integer
-#        Return None if this NestedInteger holds a nested list
-#        :rtype int
-#        """
-#
-#    def getList(self):
-#        """
-#        @return the nested list that this NestedInteger holds, if it holds a nested list
-#        Return None if this NestedInteger holds a single integer
-#        :rtype List[NestedInteger]
-#        """
 class Solution:
-    def deserialize(self, s: str) -> NestedInteger:
-        if not s or s == '[]':
+    def deserialize(self, s: str) -> "NestedInteger":
+        """Recursive descent parsing of nested integer string.
+
+        Intuition:
+            The string has a recursive structure where brackets denote
+            nesting. We can parse by tracking bracket depth and splitting
+            at commas only at the top level.
+
+        Approach:
+            1. Handle empty/empty-list and plain integer base cases.
+            2. For nested lists, iterate through characters tracking depth.
+            3. When at depth 0 and hitting a comma or end bracket,
+               recursively parse the substring between delimiters.
+
+        Complexity:
+            Time: O(n * d) where n is string length and d is nesting depth
+            Space: O(n * d) for recursive call stack and substrings
+        """
+        if not s or s == "[]":
             return NestedInteger()
-        if s[0] != '[':
+        if s[0] != "[":
             return NestedInteger(int(s))
-        ans = NestedInteger()
-        depth, j = 0, 1
+        result = NestedInteger()
+        depth, start = 0, 1
         for i in range(1, len(s)):
-            if depth == 0 and (s[i] == ',' or i == len(s) - 1):
-                ans.add(self.deserialize(s[j:i]))
-                j = i + 1
-            elif s[i] == '[':
+            if depth == 0 and (s[i] == "," or i == len(s) - 1):
+                result.add(self.deserialize(s[start:i]))
+                start = i + 1
+            elif s[i] == "[":
                 depth += 1
-            elif s[i] == ']':
+            elif s[i] == "]":
                 depth -= 1
-        return ans
+        return result

@@ -1,49 +1,65 @@
-# Definition for a binary tree node.
-# class TreeNode:
-#     def __init__(self, x):
-#         self.val = x
-#         self.left = None
-#         self.right = None
+from math import inf
 
 
 class Codec:
-    def serialize(self, root: Optional[TreeNode]) -> str:
-        """Encodes a tree to a single string."""
+    """Serialize and deserialize a BST using preorder traversal with value bounds."""
 
-        def dfs(root: Optional[TreeNode]):
-            if root is None:
+    def serialize(self, root: "TreeNode | None") -> str:
+        """Encode a BST to a space-separated preorder string.
+
+        Intuition:
+            Preorder traversal uniquely defines a BST since BST property
+            constrains the reconstruction.
+
+        Approach:
+            1. Perform preorder DFS, collecting node values.
+            2. Join values as a space-separated string.
+
+        Complexity:
+            Time: O(n) for traversal.
+            Space: O(n) for the values list.
+        """
+
+        def dfs(node: "TreeNode | None") -> None:
+            if node is None:
                 return
-            nums.append(root.val)
-            dfs(root.left)
-            dfs(root.right)
+            values.append(node.val)
+            dfs(node.left)
+            dfs(node.right)
 
-        nums = []
+        values: list[int] = []
         dfs(root)
-        return " ".join(map(str, nums))
+        return " ".join(map(str, values))
 
-    def deserialize(self, data: str) -> Optional[TreeNode]:
-        """Decodes your encoded data to tree."""
+    def deserialize(self, data: str) -> "TreeNode | None":
+        """Decode a preorder string back to a BST using value bounds.
 
-        def dfs(mi: int, mx: int) -> Optional[TreeNode]:
-            nonlocal i
-            if i == len(nums) or not mi <= nums[i] <= mx:
+        Intuition:
+            Using min/max bounds, each value in the preorder sequence can be
+            placed correctly without explicit null markers.
+
+        Approach:
+            1. Parse the string into a list of integers.
+            2. Recursively build the tree: if the current value is within
+               [min_val, max_val], create a node and recurse for left and right
+               subtrees with updated bounds.
+
+        Complexity:
+            Time: O(n) for reconstruction.
+            Space: O(n) for recursion stack.
+        """
+
+        def dfs(min_val: float, max_val: float) -> "TreeNode | None":
+            nonlocal index
+            if index == len(values) or not min_val <= values[index] <= max_val:
                 return None
-            x = nums[i]
-            root = TreeNode(x)
-            i += 1
-            root.left = dfs(mi, x)
-            root.right = dfs(x, mx)
+            value = values[index]
+            root = TreeNode(value)
+            index += 1
+            root.left = dfs(min_val, value)
+            root.right = dfs(value, max_val)
             return root
 
-        nums = list(map(int, data.split()))
-        i = 0
+        values = list(map(int, data.split()))
+        index = 0
         return dfs(-inf, inf)
-
-
-# Your Codec object will be instantiated and called as such:
-# Your Codec object will be instantiated and called as such:
-# ser = Codec()
-# deser = Codec()
-# tree = ser.serialize(root)
-# ans = deser.deserialize(tree)
-# return ans

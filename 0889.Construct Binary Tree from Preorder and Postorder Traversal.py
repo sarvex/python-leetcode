@@ -6,19 +6,46 @@
 #         self.right = right
 class Solution:
     def constructFromPrePost(
-        self, preorder: List[int], postorder: List[int]
-    ) -> Optional[TreeNode]:
-        def dfs(a: int, b: int, c: int, d: int) -> Optional[TreeNode]:
-            if a > b:
+        self, preorder: list[int], postorder: list[int]
+    ) -> TreeNode | None:
+        """Recursive construction using preorder-postorder index mapping.
+
+        Intuition:
+            The first element of preorder is the root. The second element
+            is the root of the left subtree. Find it in postorder to
+            determine the boundary between left and right subtrees.
+
+        Approach:
+            1. Build a value-to-index map for postorder.
+            2. Recursively construct trees using index ranges in both arrays.
+            3. The left subtree size is determined by the position of
+               preorder[pre_start+1] in postorder.
+
+        Complexity:
+            Time: O(n)
+            Space: O(n)
+        """
+
+        def dfs(
+            pre_start: int, pre_end: int, post_start: int, post_end: int
+        ) -> TreeNode | None:
+            if pre_start > pre_end:
                 return None
-            root = TreeNode(preorder[a])
-            if a == b:
+            root = TreeNode(preorder[pre_start])
+            if pre_start == pre_end:
                 return root
-            i = pos[preorder[a + 1]]
-            m = i - c + 1
-            root.left = dfs(a + 1, a + m, c, i)
-            root.right = dfs(a + m + 1, b, i + 1, d - 1)
+            left_root_post_index = post_index[preorder[pre_start + 1]]
+            left_size = left_root_post_index - post_start + 1
+            root.left = dfs(
+                pre_start + 1, pre_start + left_size, post_start, left_root_post_index
+            )
+            root.right = dfs(
+                pre_start + left_size + 1,
+                pre_end,
+                left_root_post_index + 1,
+                post_end - 1,
+            )
             return root
 
-        pos = {x: i for i, x in enumerate(postorder)}
+        post_index = {value: index for index, value in enumerate(postorder)}
         return dfs(0, len(preorder) - 1, 0, len(postorder) - 1)

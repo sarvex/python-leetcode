@@ -1,23 +1,36 @@
-# Definition for a binary tree node.
-# class TreeNode:
-#     def __init__(self, val=0, left=None, right=None):
-#         self.val = val
-#         self.left = left
-#         self.right = right
+from collections import deque
+
+
 class Solution:
-    def levelOrderBottom(self, root: Optional[TreeNode]) -> List[List[int]]:
-        ans = []
+    def levelOrderBottom(self, root: TreeNode | None) -> list[list[int]]:
+        """BFS level order traversal with result reversal.
+
+        Intuition:
+            A standard BFS collects nodes level by level from top to bottom.
+            Reversing the result gives bottom-up level order.
+
+        Approach:
+            1. Return empty list if root is None.
+            2. Use a deque for BFS, processing one level at a time.
+            3. Collect each level's values into a list.
+            4. Reverse the final result before returning.
+
+        Complexity:
+            Time: O(n)
+            Space: O(n)
+        """
+        result = []
         if root is None:
-            return ans
-        q = deque([root])
-        while q:
-            t = []
-            for _ in range(len(q)):
-                node = q.popleft()
-                t.append(node.val)
+            return result
+        queue = deque([root])
+        while queue:
+            level_values = []
+            for _ in range(len(queue)):
+                node = queue.popleft()
+                level_values.append(node.val)
                 if node.left:
-                    q.append(node.left)
+                    queue.append(node.left)
                 if node.right:
-                    q.append(node.right)
-            ans.append(t)
-        return ans[::-1]
+                    queue.append(node.right)
+            result.append(level_values)
+        return result[::-1]

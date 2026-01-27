@@ -2,47 +2,66 @@ from sortedcontainers import SortedList
 
 
 class ExamRoom:
-    def __init__(self, n: int):
-        def dist(x):
-            l, r = x
-            return r - l - 1 if l == -1 or r == n else (r - l) >> 1
+    """Sorted interval list maintaining maximum-distance seat assignment.
 
-        self.n = n
-        self.ts = SortedList(key=lambda x: (-dist(x), x[0]))
-        self.left = {}
-        self.right = {}
-        self.add((-1, n))
+    Intuition:
+        Track occupied seats as intervals between adjacent students. The best
+        seat maximizes the minimum distance to the nearest student, which
+        corresponds to the midpoint of the largest gap.
+
+    Approach:
+        1. Maintain a sorted list of intervals keyed by distance (descending)
+        2. On seat(): pick the interval with maximum distance, split it
+        3. On leave(): merge the two intervals adjacent to the leaving seat
+        4. Handle boundary intervals (start/end of room) specially
+
+    Complexity:
+        Time: O(log n) per seat/leave operation
+        Space: O(n) for storing intervals
+    """
+
+    def __init__(self, capacity: int) -> None:
+        def distance(interval: tuple[int, int]) -> int:
+            left, right = interval
+            if left == -1 or right == capacity:
+                return right - left - 1
+            return (right - left) >> 1
+
+        self.capacity = capacity
+        self.intervals: SortedList[tuple[int, int]] = SortedList(
+            key=lambda x: (-distance(x), x[0])
+        )
+        self.left_neighbor: dict[int, int] = {}
+        self.right_neighbor: dict[int, int] = {}
+        self._add_interval((-1, capacity))
 
     def seat(self) -> int:
-        s = self.ts[0]
-        p = (s[0] + s[1]) >> 1
-        if s[0] == -1:
-            p = 0
-        elif s[1] == self.n:
-            p = self.n - 1
-        self.delete(s)
-        self.add((s[0], p))
-        self.add((p, s[1]))
-        return p
+        """Assign the seat that maximizes distance to nearest student."""
+        interval = self.intervals[0]
+        seat_position = (interval[0] + interval[1]) >> 1
+        if interval[0] == -1:
+            seat_position = 0
+        elif interval[1] == self.capacity:
+            seat_position = self.capacity - 1
+        self._remove_interval(interval)
+        self._add_interval((interval[0], seat_position))
+        self._add_interval((seat_position, interval[1]))
+        return seat_position
 
-    def leave(self, p: int) -> None:
-        l, r = self.left[p], self.right[p]
-        self.delete((l, p))
-        self.delete((p, r))
-        self.add((l, r))
+    def leave(self, seat_position: int) -> None:
+        """Remove a student and merge adjacent intervals."""
+        left = self.left_neighbor[seat_position]
+        right = self.right_neighbor[seat_position]
+        self._remove_interval((left, seat_position))
+        self._remove_interval((seat_position, right))
+        self._add_interval((left, right))
 
-    def add(self, s):
-        self.ts.add(s)
-        self.left[s[1]] = s[0]
-        self.right[s[0]] = s[1]
+    def _add_interval(self, interval: tuple[int, int]) -> None:
+        self.intervals.add(interval)
+        self.left_neighbor[interval[1]] = interval[0]
+        self.right_neighbor[interval[0]] = interval[1]
 
-    def delete(self, s):
-        self.ts.remove(s)
-        self.left.pop(s[1])
-        self.right.pop(s[0])
-
-
-# Your ExamRoom object will be instantiated and called as such:
-# obj = ExamRoom(n)
-# param_1 = obj.seat()
-# obj.leave(p)
+    def _remove_interval(self, interval: tuple[int, int]) -> None:
+        self.intervals.remove(interval)
+        self.left_neighbor.pop(interval[1])
+        self.right_neighbor.pop(interval[0])

@@ -1,43 +1,59 @@
-class Solution:
-    def shortestPathAllKeys(self, grid: List[str]) -> int:
-        m, n = len(grid), len(grid[0])
-        # 找起点 (si, sj)
-        si, sj = next((i, j) for i in range(m) for j in range(n) if grid[i][j] == '@')
-        # 统计钥匙数量
-        k = sum(v.islower() for row in grid for v in row)
-        dirs = (-1, 0, 1, 0, -1)
-        q = deque([(si, sj, 0)])
-        vis = {(si, sj, 0)}
-        ans = 0
-        while q:
-            for _ in range(len(q)):
-                i, j, state = q.popleft()
-                # 找到所有钥匙，返回当前步数
-                if state == (1 << k) - 1:
-                    return ans
+from collections import deque
+from itertools import pairwise
 
-                # 往四个方向搜索
-                for a, b in pairwise(dirs):
-                    x, y = i + a, j + b
-                    nxt = state
-                    # 在边界范围内
-                    if 0 <= x < m and 0 <= y < n:
-                        c = grid[x][y]
-                        # 是墙，或者是锁，但此时没有对应的钥匙，无法通过
+
+class Solution:
+    def shortestPathAllKeys(self, grid: list[str]) -> int:
+        """BFS with bitmask state tracking collected keys.
+
+        Intuition:
+        Each key changes the accessible paths, so the state includes position
+        and the set of collected keys (as a bitmask). BFS on this state space
+        finds the shortest path to collect all keys.
+
+        Approach:
+        1. Find the starting position and count total keys
+        2. BFS with state (row, col, keys_bitmask)
+        3. When visiting a key, update the bitmask
+        4. Skip walls and locked doors without the matching key
+        5. Return steps when all keys are collected
+
+        Complexity:
+        Time: O(m * n * 2^k) where k is the number of keys
+        Space: O(m * n * 2^k) for visited states
+        """
+        rows, cols = len(grid), len(grid[0])
+        start_row, start_col = next(
+            (row, col)
+            for row in range(rows)
+            for col in range(cols)
+            if grid[row][col] == "@"
+        )
+        total_keys = sum(cell.islower() for row in grid for cell in row)
+        directions = (-1, 0, 1, 0, -1)
+        queue: deque[tuple[int, int, int]] = deque([(start_row, start_col, 0)])
+        visited: set[tuple[int, int, int]] = {(start_row, start_col, 0)}
+        steps = 0
+        while queue:
+            for _ in range(len(queue)):
+                row, col, key_state = queue.popleft()
+                if key_state == (1 << total_keys) - 1:
+                    return steps
+                for delta_row, delta_col in pairwise(directions):
+                    new_row, new_col = row + delta_row, col + delta_col
+                    next_state = key_state
+                    if 0 <= new_row < rows and 0 <= new_col < cols:
+                        cell = grid[new_row][new_col]
                         if (
-                            c == '#'
-                            or c.isupper()
-                            and (state & (1 << (ord(c) - ord('A')))) == 0
+                            cell == "#"
+                            or cell.isupper()
+                            and (key_state & (1 << (ord(cell) - ord("A")))) == 0
                         ):
                             continue
-                        # 是钥匙
-                        if c.islower():
-                            # 更新状态
-                            nxt |= 1 << (ord(c) - ord('a'))
-                        # 此状态未访问过，入队
-                        if (x, y, nxt) not in vis:
-                            vis.add((x, y, nxt))
-                            q.append((x, y, nxt))
-            # 步数加一
-            ans += 1
+                        if cell.islower():
+                            next_state |= 1 << (ord(cell) - ord("a"))
+                        if (new_row, new_col, next_state) not in visited:
+                            visited.add((new_row, new_col, next_state))
+                            queue.append((new_row, new_col, next_state))
+            steps += 1
         return -1

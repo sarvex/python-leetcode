@@ -1,21 +1,38 @@
 class Solution:
-    def pancakeSort(self, arr: List[int]) -> List[int]:
-        def reverse(arr, j):
-            i = 0
-            while i < j:
-                arr[i], arr[j] = arr[j], arr[i]
-                i, j = i + 1, j - 1
+    def pancakeSort(self, arr: list[int]) -> list[int]:
+        """Repeatedly flip the largest unsorted element into its correct position.
 
-        n = len(arr)
-        ans = []
-        for i in range(n - 1, 0, -1):
-            j = i
-            while j > 0 and arr[j] != i + 1:
-                j -= 1
-            if j < i:
-                if j > 0:
-                    ans.append(j + 1)
-                    reverse(arr, j)
-                ans.append(i + 1)
-                reverse(arr, i)
-        return ans
+        Intuition:
+        Like selection sort but using prefix reversals. For each position from
+        the end, find the target value, flip it to the front, then flip it to
+        its correct position.
+
+        Approach:
+        1. For each position i from n-1 down to 1, find where value i+1 is
+        2. If not already in place, flip to front (if needed), then flip to position i
+        3. Record each flip operation
+
+        Complexity:
+        Time: O(n^2) for finding and flipping each element
+        Space: O(n) for the result list
+        """
+
+        def reverse_prefix(end: int) -> None:
+            start = 0
+            while start < end:
+                arr[start], arr[end] = arr[end], arr[start]
+                start, end = start + 1, end - 1
+
+        length = len(arr)
+        flips: list[int] = []
+        for position in range(length - 1, 0, -1):
+            target_index = position
+            while target_index > 0 and arr[target_index] != position + 1:
+                target_index -= 1
+            if target_index < position:
+                if target_index > 0:
+                    flips.append(target_index + 1)
+                    reverse_prefix(target_index)
+                flips.append(position + 1)
+                reverse_prefix(position)
+        return flips

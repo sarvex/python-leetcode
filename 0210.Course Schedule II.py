@@ -1,17 +1,38 @@
+from collections import defaultdict, deque
+
+
 class Solution:
-    def findOrder(self, numCourses: int, prerequisites: List[List[int]]) -> List[int]:
-        g = defaultdict(list)
-        indeg = [0] * numCourses
-        for a, b in prerequisites:
-            g[b].append(a)
-            indeg[a] += 1
-        ans = []
-        q = deque(i for i, x in enumerate(indeg) if x == 0)
-        while q:
-            i = q.popleft()
-            ans.append(i)
-            for j in g[i]:
-                indeg[j] -= 1
-                if indeg[j] == 0:
-                    q.append(j)
-        return ans if len(ans) == numCourses else []
+    def findOrder(self, numCourses: int, prerequisites: list[list[int]]) -> list[int]:
+        """Topological sort via BFS (Kahn's algorithm) to find course order.
+
+        Intuition:
+            A valid course order is a topological ordering of the prerequisite
+            graph. BFS starting from zero in-degree nodes naturally produces
+            this order.
+
+        Approach:
+            1. Build an adjacency list and in-degree array from prerequisites.
+            2. Enqueue all courses with zero in-degree.
+            3. Process the queue: append each course to the result, decrement
+               neighbors' in-degree, and enqueue those reaching zero.
+            4. Return the order if all courses are included, else empty list.
+
+        Complexity:
+            Time: O(V + E) where V = numCourses, E = len(prerequisites)
+            Space: O(V + E)
+        """
+        graph = defaultdict(list)
+        in_degree = [0] * numCourses
+        for course, prerequisite in prerequisites:
+            graph[prerequisite].append(course)
+            in_degree[course] += 1
+        order = []
+        queue = deque(i for i, degree in enumerate(in_degree) if degree == 0)
+        while queue:
+            current = queue.popleft()
+            order.append(current)
+            for neighbor in graph[current]:
+                in_degree[neighbor] -= 1
+                if in_degree[neighbor] == 0:
+                    queue.append(neighbor)
+        return order if len(order) == numCourses else []

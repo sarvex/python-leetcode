@@ -1,26 +1,44 @@
-from math import inf
+import math
 from collections import defaultdict
-from heapq import heappop
-from typing import List
+from heapq import heappop, heappush
 
 
 class Solution:
-  def reachableNodes(self, edges: List[List[int]], maxMoves: int, n: int) -> int:
-    g = defaultdict(list)
-    for u, v, cnt in edges:
-      g[u].append((v, cnt + 1))
-      g[v].append((u, cnt + 1))
-    q = [(0, 0)]
-    dist = [0] + [inf] * n
-    while q:
-      d, u = heappop(q)
-      for v, cnt in g[u]:
-        if (t := d + cnt) < dist[v]:
-          dist[v] = t
-          q.append((t, v))
-    ans = sum(d <= maxMoves for d in dist)
-    for u, v, cnt in edges:
-      a = min(cnt, max(0, maxMoves - dist[u]))
-      b = min(cnt, max(0, maxMoves - dist[v]))
-      ans += min(cnt, a + b)
-    return ans
+    def reachableNodes(self, edges: list[list[int]], maxMoves: int, n: int) -> int:
+        """Modified Dijkstra counting reachable original and subdivided nodes.
+
+        Intuition:
+            Treat subdivided edges as weighted edges. Use Dijkstra to find
+            shortest distances, then count how many subdivided nodes on each
+            edge are reachable from both endpoints.
+
+        Approach:
+            1. Build an adjacency list with edge weights equal to subdivided
+               node count + 1.
+            2. Run Dijkstra from node 0 to compute shortest distances.
+            3. Count all original nodes within maxMoves distance.
+            4. For each edge, count reachable subdivided nodes from both
+               endpoints, capping at the total subdivided count.
+
+        Complexity:
+            Time: O(E log V)
+            Space: O(V + E)
+        """
+        graph: dict[int, list[tuple[int, int]]] = defaultdict(list)
+        for source, dest, count in edges:
+            graph[source].append((dest, count + 1))
+            graph[dest].append((source, count + 1))
+        priority_queue = [(0, 0)]
+        dist = [0] + [math.inf] * n
+        while priority_queue:
+            distance, node = heappop(priority_queue)
+            for neighbor, weight in graph[node]:
+                if (new_dist := distance + weight) < dist[neighbor]:
+                    dist[neighbor] = new_dist
+                    heappush(priority_queue, (new_dist, neighbor))
+        reachable = sum(d <= maxMoves for d in dist)
+        for source, dest, count in edges:
+            from_source = min(count, max(0, maxMoves - dist[source]))
+            from_dest = min(count, max(0, maxMoves - dist[dest]))
+            reachable += min(count, from_source + from_dest)
+        return reachable

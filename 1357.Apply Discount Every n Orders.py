@@ -1,20 +1,33 @@
 class Cashier:
-    def __init__(self, n: int, discount: int, products: List[int], prices: List[int]):
-        self.i = 0
-        self.n = n
+    """Cashier system that applies a discount every n-th customer.
+
+    Intuition:
+        Track the customer count and apply the percentage discount on every
+        n-th order by reducing each item's cost proportionally.
+
+    Approach:
+        Store product prices in a dictionary for O(1) lookup. Maintain a
+        counter incremented on each getBill call. When the counter is
+        divisible by n, apply the discount percentage to the total bill.
+
+    Complexity:
+        Time: O(m) per getBill where m is the number of products purchased.
+        Space: O(p) where p is the number of distinct products.
+    """
+
+    def __init__(
+        self, n: int, discount: int, products: list[int], prices: list[int]
+    ) -> None:
+        self.customer_count = 0
+        self.frequency = n
         self.discount = discount
-        self.d = {product: price for product, price in zip(products, prices)}
+        self.price_map: dict[int, int] = dict(zip(products, prices))
 
-    def getBill(self, product: List[int], amount: List[int]) -> float:
-        self.i += 1
-        discount = self.discount if self.i % self.n == 0 else 0
-        ans = 0
-        for p, a in zip(product, amount):
-            x = self.d[p] * a
-            ans += x - (discount * x) / 100
-        return ans
-
-
-# Your Cashier object will be instantiated and called as such:
-# obj = Cashier(n, discount, products, prices)
-# param_1 = obj.getBill(product,amount)
+    def getBill(self, product: list[int], amount: list[int]) -> float:
+        self.customer_count += 1
+        discount = self.discount if self.customer_count % self.frequency == 0 else 0
+        total = 0.0
+        for prod, qty in zip(product, amount):
+            item_cost = self.price_map[prod] * qty
+            total += item_cost - (discount * item_cost) / 100
+        return total

@@ -1,43 +1,60 @@
-class Trie:
-    def __init__(self):
-        self.name = None
-        self.isFile = False
-        self.content = []
-        self.children = {}
+class TrieNode:
+    def __init__(self) -> None:
+        self.name: str | None = None
+        self.is_file: bool = False
+        self.content: list[str] = []
+        self.children: dict[str, TrieNode] = {}
 
-    def insert(self, path, isFile):
+    def insert(self, path: str, is_file: bool) -> "TrieNode":
         node = self
-        ps = path.split('/')
-        for p in ps[1:]:
-            if p not in node.children:
-                node.children[p] = Trie()
-            node = node.children[p]
-        node.isFile = isFile
-        if isFile:
-            node.name = ps[-1]
+        parts = path.split("/")
+        for part in parts[1:]:
+            if part not in node.children:
+                node.children[part] = TrieNode()
+            node = node.children[part]
+        node.is_file = is_file
+        if is_file:
+            node.name = parts[-1]
         return node
 
-    def search(self, path):
+    def search(self, path: str) -> "TrieNode | None":
         node = self
-        if path == '/':
+        if path == "/":
             return node
-        ps = path.split('/')
-        for p in ps[1:]:
-            if p not in node.children:
+        parts = path.split("/")
+        for part in parts[1:]:
+            if part not in node.children:
                 return None
-            node = node.children[p]
+            node = node.children[part]
         return node
 
 
 class FileSystem:
-    def __init__(self):
-        self.root = Trie()
+    """In-memory file system using a trie structure for path storage.
 
-    def ls(self, path: str) -> List[str]:
+    Intuition:
+        A file system is naturally a tree structure. Using a trie where each
+        node represents a directory or file allows efficient path traversal.
+
+    Approach:
+        1. Use a trie with each node storing children directories/files.
+        2. For ls: search the path and return sorted children or file name.
+        3. For mkdir: insert path creating nodes as needed.
+        4. For file operations: insert as file node and append/read content.
+
+    Complexity:
+        Time: O(L) per operation where L is the path length
+        Space: O(total characters stored across all paths and file contents)
+    """
+
+    def __init__(self) -> None:
+        self.root = TrieNode()
+
+    def ls(self, path: str) -> list[str]:
         node = self.root.search(path)
         if node is None:
             return []
-        if node.isFile:
+        if node.is_file:
             return [node.name]
         return sorted(node.children.keys())
 
@@ -50,12 +67,4 @@ class FileSystem:
 
     def readContentFromFile(self, filePath: str) -> str:
         node = self.root.search(filePath)
-        return ''.join(node.content)
-
-
-# Your FileSystem object will be instantiated and called as such:
-# obj = FileSystem()
-# param_1 = obj.ls(path)
-# obj.mkdir(path)
-# obj.addContentToFile(filePath,content)
-# param_4 = obj.readContentFromFile(filePath)
+        return "".join(node.content)

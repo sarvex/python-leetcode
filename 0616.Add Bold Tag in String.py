@@ -1,12 +1,12 @@
 class Trie:
-    def __init__(self):
-        self.children = [None] * 128
-        self.is_end = False
+    def __init__(self) -> None:
+        self.children: list[Trie | None] = [None] * 128
+        self.is_end: bool = False
 
-    def insert(self, word):
+    def insert(self, word: str) -> None:
         node = self
-        for c in word:
-            idx = ord(c)
+        for char in word:
+            idx = ord(char)
             if node.children[idx] is None:
                 node.children[idx] = Trie()
             node = node.children[idx]
@@ -14,15 +14,32 @@ class Trie:
 
 
 class Solution:
-    def addBoldTag(self, s: str, words: List[str]) -> str:
+    def addBoldTag(self, s: str, words: list[str]) -> str:
+        """Add bold tags around substrings found in words using trie matching.
+
+        Intuition:
+            Use a trie to efficiently find all occurrences of dictionary words
+            in the string, merge overlapping intervals, then wrap bold regions.
+
+        Approach:
+            1. Build a trie from the words list.
+            2. For each position in s, find all word matches using the trie.
+            3. Collect match intervals and merge overlapping ones.
+            4. Build the result string, inserting <b> and </b> tags around
+               merged intervals.
+
+        Complexity:
+            Time: O(n^2 + m) where n is string length and m is total word characters
+            Space: O(m + n)
+        """
         trie = Trie()
-        for w in words:
-            trie.insert(w)
-        n = len(s)
-        pairs = []
-        for i in range(n):
+        for word in words:
+            trie.insert(word)
+        length = len(s)
+        pairs: list[list[int]] = []
+        for i in range(length):
             node = trie
-            for j in range(i, n):
+            for j in range(i, length):
                 idx = ord(s[j])
                 if node.children[idx] is None:
                     break
@@ -31,29 +48,29 @@ class Solution:
                     pairs.append([i, j])
         if not pairs:
             return s
-        st, ed = pairs[0]
-        t = []
-        for a, b in pairs[1:]:
-            if ed + 1 < a:
-                t.append([st, ed])
-                st, ed = a, b
+        start, end = pairs[0]
+        merged: list[list[int]] = []
+        for interval_start, interval_end in pairs[1:]:
+            if end + 1 < interval_start:
+                merged.append([start, end])
+                start, end = interval_start, interval_end
             else:
-                ed = max(ed, b)
-        t.append([st, ed])
+                end = max(end, interval_end)
+        merged.append([start, end])
 
-        ans = []
-        i = j = 0
-        while i < n:
-            if j == len(t):
-                ans.append(s[i:])
+        result: list[str] = []
+        i = merge_idx = 0
+        while i < length:
+            if merge_idx == len(merged):
+                result.append(s[i:])
                 break
-            st, ed = t[j]
-            if i < st:
-                ans.append(s[i:st])
-            ans.append('<b>')
-            ans.append(s[st : ed + 1])
-            ans.append('</b>')
-            j += 1
-            i = ed + 1
+            start, end = merged[merge_idx]
+            if i < start:
+                result.append(s[i:start])
+            result.append("<b>")
+            result.append(s[start : end + 1])
+            result.append("</b>")
+            merge_idx += 1
+            i = end + 1
 
-        return ''.join(ans)
+        return "".join(result)

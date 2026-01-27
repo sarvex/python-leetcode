@@ -1,31 +1,42 @@
-# Definition for a binary tree node.
-# class TreeNode:
-#     def __init__(self, val=0, left=None, right=None):
-#         self.val = val
-#         self.left = left
-#         self.right = right
 class Solution:
-    def str2tree(self, s: str) -> TreeNode:
-        def dfs(s):
-            if not s:
+    def str2tree(self, s: str) -> TreeNode | None:
+        """Recursive parsing of parenthesized string to build binary tree.
+
+        Intuition:
+            The string format is "val(left)(right)". Parse the root value,
+            then recursively build left and right subtrees from parenthesized
+            substrings.
+
+        Approach:
+            Find the first '(' to separate the root value. Track parenthesis
+            depth to find the boundary between left and right subtrees.
+            Recursively build each subtree.
+
+        Complexity:
+            Time: O(n^2) worst case due to string slicing
+            Space: O(n) for recursion stack
+        """
+
+        def parse(text: str) -> TreeNode | None:
+            if not text:
                 return None
-            p = s.find('(')
-            if p == -1:
-                return TreeNode(int(s))
-            root = TreeNode(int(s[:p]))
-            start = p
-            cnt = 0
-            for i in range(p, len(s)):
-                if s[i] == '(':
-                    cnt += 1
-                elif s[i] == ')':
-                    cnt -= 1
-                if cnt == 0:
-                    if start == p:
-                        root.left = dfs(s[start + 1 : i])
+            paren_pos = text.find("(")
+            if paren_pos == -1:
+                return TreeNode(int(text))
+            root = TreeNode(int(text[:paren_pos]))
+            start = paren_pos
+            depth = 0
+            for i in range(paren_pos, len(text)):
+                if text[i] == "(":
+                    depth += 1
+                elif text[i] == ")":
+                    depth -= 1
+                if depth == 0:
+                    if start == paren_pos:
+                        root.left = parse(text[start + 1 : i])
                         start = i + 1
                     else:
-                        root.right = dfs(s[start + 1 : i])
+                        root.right = parse(text[start + 1 : i])
             return root
 
-        return dfs(s)
+        return parse(s)

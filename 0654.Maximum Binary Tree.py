@@ -1,19 +1,31 @@
-# Definition for a binary tree node.
-# class TreeNode:
-#     def __init__(self, val=0, left=None, right=None):
-#         self.val = val
-#         self.left = left
-#         self.right = right
 class Solution:
-    def constructMaximumBinaryTree(self, nums: List[int]) -> Optional[TreeNode]:
-        def dfs(nums):
-            if not nums:
+    def constructMaximumBinaryTree(self, nums: list[int]) -> "TreeNode | None":
+        """Recursive construction by finding max element and splitting array.
+
+        Intuition:
+        The root is always the maximum element. The left subtree is built from
+        elements before the max, and the right subtree from elements after it.
+
+        Approach:
+        1. If the array is empty, return None.
+        2. Find the maximum value and its index.
+        3. Create a node with the max value.
+        4. Recursively build left subtree from elements before the max.
+        5. Recursively build right subtree from elements after the max.
+
+        Complexity:
+        Time: O(n^2) worst case, O(n log n) average
+        Space: O(n)
+        """
+
+        def dfs(elements: list[int]) -> "TreeNode | None":
+            if not elements:
                 return None
-            val = max(nums)
-            i = nums.index(val)
-            root = TreeNode(val)
-            root.left = dfs(nums[:i])
-            root.right = dfs(nums[i + 1 :])
+            max_val = max(elements)
+            max_idx = elements.index(max_val)
+            root = TreeNode(max_val)
+            root.left = dfs(elements[:max_idx])
+            root.right = dfs(elements[max_idx + 1 :])
             return root
 
         return dfs(nums)

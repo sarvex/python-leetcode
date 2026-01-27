@@ -1,23 +1,29 @@
-from typing import Optional, List
-
-
-# Definition for a binary tree node.
-class TreeNode:
-  def __init__(self, val=0, left=None, right=None):
-    self.val = val
-    self.left = left
-    self.right = right
-
-
 class Solution:
-  def postorderTraversal(self, root: Optional[TreeNode]) -> List[int]:
-    def search(root):
-      if root is None:
-        return
-      search(root.left)
-      search(root.right)
-      ans.append(root.val)
+    def postorderTraversal(self, root: TreeNode | None) -> list[int]:
+        """Recursive DFS postorder traversal (left, right, root).
 
-    ans = []
-    search(root)
-    return ans
+        Intuition:
+            Postorder visits left subtree, right subtree, then the root.
+            A recursive DFS naturally captures this ordering.
+
+        Approach:
+            1. Initialize a result list.
+            2. Define a recursive helper that recurses on left, then right,
+               then appends the current node value.
+            3. Return the collected result.
+
+        Complexity:
+            Time: O(n)
+            Space: O(n) — result list plus O(h) recursion stack
+        """
+
+        def dfs(node: TreeNode | None) -> None:
+            if node is None:
+                return
+            dfs(node.left)
+            dfs(node.right)
+            result.append(node.val)
+
+        result = []
+        dfs(root)
+        return result

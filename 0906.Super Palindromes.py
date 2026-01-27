@@ -1,20 +1,41 @@
-ps = []
-for i in range(1, 10 ** 5 + 1):
-  s = str(i)
-  t1 = s[::-1]
-  t2 = s[:-1][::-1]
-  ps.append(int(s + t1))
-  ps.append(int(s + t2))
+palindrome_roots = []
+for _i in range(1, 10**5 + 1):
+    _s = str(_i)
+    _odd_palindrome = _s[::-1]
+    _even_palindrome = _s[:-1][::-1]
+    palindrome_roots.append(int(_s + _odd_palindrome))
+    palindrome_roots.append(int(_s + _even_palindrome))
 
 
 class Solution:
-  def superpalindromesInRange(self, left: str, right: str) -> int:
-    def is_palindrome(x: int) -> bool:
-      y, t = 0, x
-      while t:
-        y = y * 10 + t % 10
-        t //= 10
-      return x == y
+    def superpalindromesInRange(self, left: str, right: str) -> int:
+        """Enumerate palindrome roots and check if their squares are palindromes.
 
-    l, r = int(left), int(right)
-    return sum(l <= x <= r and is_palindrome(x) for x in map(lambda x: x * x, ps))
+        Intuition:
+            A super palindrome is a palindrome whose square root is also a
+            palindrome. We can enumerate all palindromic roots up to a limit
+            and check if their squares fall within the range and are palindromes.
+
+        Approach:
+            1. Precompute all palindrome numbers up to ~10^5 digits by
+               mirroring digit strings (both odd and even length).
+            2. For each palindrome root, compute its square.
+            3. Check if the square is within [left, right] and is a palindrome.
+
+        Complexity:
+            Time: O(W^(1/4) * log(W)) where W is the upper bound
+            Space: O(W^(1/4))
+        """
+
+        def is_palindrome(number: int) -> bool:
+            reversed_num, temp = 0, number
+            while temp:
+                reversed_num = reversed_num * 10 + temp % 10
+                temp //= 10
+            return number == reversed_num
+
+        lower, upper = int(left), int(right)
+        return sum(
+            lower <= squared <= upper and is_palindrome(squared)
+            for squared in map(lambda root: root * root, palindrome_roots)
+        )

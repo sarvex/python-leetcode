@@ -1,17 +1,34 @@
 from collections import defaultdict
-from typing import List
 
 
 class Solution:
-  def findItinerary(self, tickets: List[List[str]]) -> List[str]:
-    def search(f: str):
-      while g[f]:
-        search(g[f].pop())
-      ans.append(f)
+    def findItinerary(self, tickets: list[list[str]]) -> list[str]:
+        """Hierholzer's algorithm for Eulerian path reconstruction.
 
-    g = defaultdict(list)
-    for f, t in sorted(tickets, reverse=True):
-      g[f].append(t)
-    ans = []
-    search("JFK")
-    return ans[::-1]
+        Intuition:
+            The itinerary is an Eulerian path in a directed graph. By greedily
+            visiting the smallest lexicographic destination and backtracking
+            when stuck, we reconstruct the correct order.
+
+        Approach:
+            1. Build an adjacency list sorted in reverse lexicographic order
+               so that popping gives the smallest destination.
+            2. Perform DFS from 'JFK', appending airports post-visit.
+            3. Reverse the result to get the correct itinerary order.
+
+        Complexity:
+            Time: O(E log E) where E is the number of tickets (for sorting)
+            Space: O(E) for the graph and result
+        """
+
+        def search(airport: str) -> None:
+            while graph[airport]:
+                search(graph[airport].pop())
+            itinerary.append(airport)
+
+        graph: dict[str, list[str]] = defaultdict(list)
+        for origin, destination in sorted(tickets, reverse=True):
+            graph[origin].append(destination)
+        itinerary: list[str] = []
+        search("JFK")
+        return itinerary[::-1]

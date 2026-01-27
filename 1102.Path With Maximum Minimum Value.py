@@ -1,23 +1,46 @@
-class Solution:
-    def maximumMinimumPath(self, grid: List[List[int]]) -> int:
-        def find(x: int) -> int:
-            if p[x] != x:
-                p[x] = find(p[x])
-            return p[x]
+from itertools import pairwise
 
-        m, n = len(grid), len(grid[0])
-        p = list(range(m * n))
-        q = [(v, i, j) for i, row in enumerate(grid) for j, v in enumerate(row)]
-        q.sort()
-        ans = 0
-        dirs = (-1, 0, 1, 0, -1)
-        vis = set()
-        while find(0) != find(m * n - 1):
-            v, i, j = q.pop()
-            ans = v
-            vis.add((i, j))
-            for a, b in pairwise(dirs):
-                x, y = i + a, j + b
-                if (x, y) in vis:
-                    p[find(i * n + j)] = find(x * n + y)
-        return ans
+
+class Solution:
+    def maximumMinimumPath(self, grid: list[list[int]]) -> int:
+        """Find path maximizing the minimum value using Union-Find with sorting.
+
+        Intuition:
+            Process cells from largest to smallest value. As we add each cell,
+            union it with already-visited neighbors. The answer is the value of
+            the cell that first connects top-left to bottom-right.
+
+        Approach:
+            Collect all cells with their values and sort them. Process cells
+            in descending order, marking them visited and unioning with visited
+            neighbors. Once (0,0) and (m-1,n-1) share a root, return the
+            current cell's value.
+
+        Complexity:
+            Time: O(m * n * log(m * n)) for sorting all cells
+            Space: O(m * n) for parent array and visited set
+        """
+
+        def find(x: int) -> int:
+            if parent[x] != x:
+                parent[x] = find(parent[x])
+            return parent[x]
+
+        rows, cols = len(grid), len(grid[0])
+        parent = list(range(rows * cols))
+        cells = [
+            (value, r, c) for r, row in enumerate(grid) for c, value in enumerate(row)
+        ]
+        cells.sort()
+        result = 0
+        directions = (-1, 0, 1, 0, -1)
+        visited: set[tuple[int, int]] = set()
+        while find(0) != find(rows * cols - 1):
+            value, r, c = cells.pop()
+            result = value
+            visited.add((r, c))
+            for dr, dc in pairwise(directions):
+                nr, nc = r + dr, c + dc
+                if (nr, nc) in visited:
+                    parent[find(r * cols + c)] = find(nr * cols + nc)
+        return result

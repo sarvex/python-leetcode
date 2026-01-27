@@ -1,43 +1,63 @@
+from collections import deque
+
+
 class SnakeGame:
-    def __init__(self, width: int, height: int, food: List[List[int]]):
-        self.m = height
-        self.n = width
+    """Simulates the classic Snake game on a grid.
+
+    Intuition:
+        Track the snake body as an ordered sequence and use a set for O(1)
+        collision detection. The head moves in the given direction, and the
+        tail is removed unless food is eaten.
+
+    Approach:
+        Use a deque for the snake body (head at front, tail at back) and a
+        set for occupied positions. On each move, compute the new head
+        position. If out of bounds, return -1. If food is at the new
+        position, increment score and keep the tail. Otherwise remove the
+        tail from both the deque and the set. If the new head collides with
+        the body, return -1. Otherwise add the new head and return the score.
+
+    Complexity:
+        Time: O(1) per move
+        Space: O(n + m) where n is the snake length and m is the food count
+    """
+
+    def __init__(self, width: int, height: int, food: list[list[int]]) -> None:
+        """Initialize the game board, snake position, and food list."""
+        self.rows = height
+        self.cols = width
         self.food = food
         self.score = 0
-        self.idx = 0
-        self.q = deque([(0, 0)])
-        self.vis = {(0, 0)}
+        self.food_index = 0
+        self.body: deque[tuple[int, int]] = deque([(0, 0)])
+        self.occupied: set[tuple[int, int]] = {(0, 0)}
 
     def move(self, direction: str) -> int:
-        i, j = self.q[0]
-        x, y = i, j
+        """Move the snake in the given direction and return the score or -1 if game over."""
+        head_row, head_col = self.body[0]
+        new_row, new_col = head_row, head_col
         match direction:
             case "U":
-                x -= 1
+                new_row -= 1
             case "D":
-                x += 1
+                new_row += 1
             case "L":
-                y -= 1
+                new_col -= 1
             case "R":
-                y += 1
-        if x < 0 or x >= self.m or y < 0 or y >= self.n:
+                new_col += 1
+        if new_row < 0 or new_row >= self.rows or new_col < 0 or new_col >= self.cols:
             return -1
         if (
-            self.idx < len(self.food)
-            and x == self.food[self.idx][0]
-            and y == self.food[self.idx][1]
+            self.food_index < len(self.food)
+            and new_row == self.food[self.food_index][0]
+            and new_col == self.food[self.food_index][1]
         ):
             self.score += 1
-            self.idx += 1
+            self.food_index += 1
         else:
-            self.vis.remove(self.q.pop())
-        if (x, y) in self.vis:
+            self.occupied.remove(self.body.pop())
+        if (new_row, new_col) in self.occupied:
             return -1
-        self.q.appendleft((x, y))
-        self.vis.add((x, y))
+        self.body.appendleft((new_row, new_col))
+        self.occupied.add((new_row, new_col))
         return self.score
-
-
-# Your SnakeGame object will be instantiated and called as such:
-# obj = SnakeGame(width, height, food)
-# param_1 = obj.move(direction)

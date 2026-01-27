@@ -1,50 +1,24 @@
-# """
-# This is the interface that allows for creating nested lists.
-# You should not implement it, or speculate about its implementation
-# """
-# class NestedInteger:
-#    def __init__(self, value=None):
-#        """
-#        If value is not specified, initializes an empty list.
-#        Otherwise initializes a single integer equal to value.
-#        """
-#
-#    def isInteger(self):
-#        """
-#        @return True if this NestedInteger holds a single integer, rather than a nested list.
-#        :rtype bool
-#        """
-#
-#    def add(self, elem):
-#        """
-#        Set this NestedInteger to hold a nested list and adds a nested integer elem to it.
-#        :rtype void
-#        """
-#
-#    def setInteger(self, value):
-#        """
-#        Set this NestedInteger to hold a single integer equal to value.
-#        :rtype void
-#        """
-#
-#    def getInteger(self):
-#        """
-#        @return the single integer that this NestedInteger holds, if it holds a single integer
-#        Return None if this NestedInteger holds a nested list
-#        :rtype int
-#        """
-#
-#    def getList(self):
-#        """
-#        @return the nested list that this NestedInteger holds, if it holds a nested list
-#        Return None if this NestedInteger holds a single integer
-#        :rtype List[NestedInteger]
-#        """
 class Solution:
-    def depthSum(self, nestedList: List[NestedInteger]) -> int:
-        def dfs(nestedList, depth):
+    def depthSum(self, nestedList: list["NestedInteger"]) -> int:
+        """Recursive DFS weighting each integer by its nesting depth.
+
+        Intuition:
+            Each integer should be multiplied by its depth level. Recursively
+            traverse the nested structure, incrementing depth at each level.
+
+        Approach:
+            1. Iterate over each element in the nested list.
+            2. If it is an integer, add value * depth to the running sum.
+            3. If it is a list, recurse with depth + 1.
+
+        Complexity:
+            Time: O(n) where n is the total number of nested elements
+            Space: O(d) where d is the maximum nesting depth
+        """
+
+        def dfs(nested_list: list["NestedInteger"], depth: int) -> int:
             depth_sum = 0
-            for item in nestedList:
+            for item in nested_list:
                 if item.isInteger():
                     depth_sum += item.getInteger() * depth
                 else:

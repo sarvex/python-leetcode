@@ -1,56 +1,83 @@
+from collections import deque
+
+
 HOLE, MOUSE_START, CAT_START = 0, 1, 2
 MOUSE_TURN, CAT_TURN = 0, 1
 MOUSE_WIN, CAT_WIN, TIE = 1, 2, 0
 
 
 class Solution:
-    def catMouseGame(self, graph: List[List[int]]) -> int:
-        def get_prev_states(state):
-            m, c, t = state
-            pt = t ^ 1
-            pre = []
-            if pt == CAT_TURN:
-                for pc in graph[c]:
-                    if pc != HOLE:
-                        pre.append((m, pc, pt))
-            else:
-                for pm in graph[m]:
-                    pre.append((pm, c, pt))
-            return pre
+    def catMouseGame(self, graph: list[list[int]]) -> int:
+        """Topological game theory with backward induction BFS.
 
-        n = len(graph)
-        res = [[[0, 0] for _ in range(n)] for _ in range(n)]
-        degree = [[[0, 0] for _ in range(n)] for _ in range(n)]
-        for i in range(n):
-            for j in range(1, n):
-                degree[i][j][MOUSE_TURN] = len(graph[i])
-                degree[i][j][CAT_TURN] = len(graph[j])
-            for j in graph[HOLE]:
-                degree[i][j][CAT_TURN] -= 1
-        q = deque()
-        for j in range(1, n):
-            res[0][j][MOUSE_TURN] = res[0][j][CAT_TURN] = MOUSE_WIN
-            q.append((0, j, MOUSE_TURN))
-            q.append((0, j, CAT_TURN))
-        for i in range(1, n):
-            res[i][i][MOUSE_TURN] = res[i][i][CAT_TURN] = CAT_WIN
-            q.append((i, i, MOUSE_TURN))
-            q.append((i, i, CAT_TURN))
-        while q:
-            state = q.popleft()
-            t = res[state[0]][state[1]][state[2]]
+        Intuition:
+            This is a combinatorial game where we determine the outcome from
+            known terminal states (mouse at hole = mouse wins, cat catches
+            mouse = cat wins) and propagate backwards through all reachable
+            game states.
+
+        Approach:
+            1. Initialize terminal states: mouse at hole (mouse wins) and
+               mouse at same position as cat (cat wins).
+            2. Track the degree (number of moves) for each state.
+            3. BFS backward from terminal states: if a previous state can
+               reach a winning state for the current player, mark it as won.
+               Otherwise, decrement degree and mark as lost when no moves left.
+            4. Return the result for the initial state.
+
+        Complexity:
+            Time: O(n^3) where n is the number of nodes
+            Space: O(n^2)
+        """
+
+        def get_prev_states(state: tuple[int, int, int]) -> list[tuple[int, int, int]]:
+            mouse_pos, cat_pos, turn = state
+            prev_turn = turn ^ 1
+            predecessors: list[tuple[int, int, int]] = []
+            if prev_turn == CAT_TURN:
+                for prev_cat in graph[cat_pos]:
+                    if prev_cat != HOLE:
+                        predecessors.append((mouse_pos, prev_cat, prev_turn))
+            else:
+                for prev_mouse in graph[mouse_pos]:
+                    predecessors.append((prev_mouse, cat_pos, prev_turn))
+            return predecessors
+
+        num_nodes = len(graph)
+        result = [[[0, 0] for _ in range(num_nodes)] for _ in range(num_nodes)]
+        degree = [[[0, 0] for _ in range(num_nodes)] for _ in range(num_nodes)]
+        for mouse in range(num_nodes):
+            for cat in range(1, num_nodes):
+                degree[mouse][cat][MOUSE_TURN] = len(graph[mouse])
+                degree[mouse][cat][CAT_TURN] = len(graph[cat])
+            for neighbor in graph[HOLE]:
+                degree[mouse][neighbor][CAT_TURN] -= 1
+
+        queue: deque[tuple[int, int, int]] = deque()
+        for cat in range(1, num_nodes):
+            result[0][cat][MOUSE_TURN] = result[0][cat][CAT_TURN] = MOUSE_WIN
+            queue.append((0, cat, MOUSE_TURN))
+            queue.append((0, cat, CAT_TURN))
+        for pos in range(1, num_nodes):
+            result[pos][pos][MOUSE_TURN] = result[pos][pos][CAT_TURN] = CAT_WIN
+            queue.append((pos, pos, MOUSE_TURN))
+            queue.append((pos, pos, CAT_TURN))
+
+        while queue:
+            state = queue.popleft()
+            outcome = result[state[0]][state[1]][state[2]]
             for prev_state in get_prev_states(state):
-                pm, pc, pt = prev_state
-                if res[pm][pc][pt] == TIE:
-                    win = (t == MOUSE_WIN and pt == MOUSE_TURN) or (
-                        t == CAT_WIN and pt == CAT_TURN
-                    )
-                    if win:
-                        res[pm][pc][pt] = t
-                        q.append(prev_state)
+                prev_mouse, prev_cat, prev_turn = prev_state
+                if result[prev_mouse][prev_cat][prev_turn] == TIE:
+                    is_winning_move = (
+                        outcome == MOUSE_WIN and prev_turn == MOUSE_TURN
+                    ) or (outcome == CAT_WIN and prev_turn == CAT_TURN)
+                    if is_winning_move:
+                        result[prev_mouse][prev_cat][prev_turn] = outcome
+                        queue.append(prev_state)
                     else:
-                        degree[pm][pc][pt] -= 1
-                        if degree[pm][pc][pt] == 0:
-                            res[pm][pc][pt] = t
-                            q.append(prev_state)
-        return res[MOUSE_START][CAT_START][MOUSE_TURN]
+                        degree[prev_mouse][prev_cat][prev_turn] -= 1
+                        if degree[prev_mouse][prev_cat][prev_turn] == 0:
+                            result[prev_mouse][prev_cat][prev_turn] = outcome
+                            queue.append(prev_state)
+        return result[MOUSE_START][CAT_START][MOUSE_TURN]

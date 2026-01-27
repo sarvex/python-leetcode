@@ -1,16 +1,36 @@
 class Solution:
-    def lenLongestFibSubseq(self, arr: List[int]) -> int:
-        n = len(arr)
-        f = [[0] * n for _ in range(n)]
-        d = {x: i for i, x in enumerate(arr)}
-        for i in range(n):
+    def lenLongestFibSubseq(self, arr: list[int]) -> int:
+        """Dynamic programming with value-to-index map for Fibonacci pairs.
+
+        Intuition:
+            For each pair (arr[j], arr[i]), check if arr[i] - arr[j] exists
+            earlier in the array, extending a Fibonacci-like subsequence.
+
+        Approach:
+            1. Build a dictionary mapping each value to its index.
+            2. Use a 2D DP table where dp[i][j] represents the length of
+               the longest Fibonacci subsequence ending with arr[j] and arr[i].
+            3. For each pair (i, j), compute the required predecessor and
+               look it up in the dictionary to extend the chain.
+
+        Complexity:
+            Time: O(n^2)
+            Space: O(n^2)
+        """
+        length = len(arr)
+        dp = [[0] * length for _ in range(length)]
+        value_to_index = {value: index for index, value in enumerate(arr)}
+        for i in range(length):
             for j in range(i):
-                f[i][j] = 2
-        ans = 0
-        for i in range(2, n):
+                dp[i][j] = 2
+        longest = 0
+        for i in range(2, length):
             for j in range(1, i):
-                t = arr[i] - arr[j]
-                if t in d and (k := d[t]) < j:
-                    f[i][j] = max(f[i][j], f[j][k] + 1)
-                    ans = max(ans, f[i][j])
-        return ans
+                predecessor = arr[i] - arr[j]
+                if (
+                    predecessor in value_to_index
+                    and (prev_index := value_to_index[predecessor]) < j
+                ):
+                    dp[i][j] = max(dp[i][j], dp[j][prev_index] + 1)
+                    longest = max(longest, dp[i][j])
+        return longest

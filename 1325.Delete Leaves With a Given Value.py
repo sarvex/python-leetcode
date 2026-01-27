@@ -1,13 +1,19 @@
-# Definition for a binary tree node.
-# class TreeNode:
-#     def __init__(self, val=0, left=None, right=None):
-#         self.val = val
-#         self.left = left
-#         self.right = right
 class Solution:
-    def removeLeafNodes(
-        self, root: Optional[TreeNode], target: int
-    ) -> Optional[TreeNode]:
+    def removeLeafNodes(self, root: TreeNode | None, target: int) -> TreeNode | None:
+        """Remove all leaf nodes with the given target value repeatedly.
+
+        Intuition:
+            Post-order traversal naturally handles cascading deletions: after
+            removing children, a parent may become a new leaf to remove.
+
+        Approach:
+            Recursively process left and right subtrees first, then check if
+            the current node is a leaf with the target value.
+
+        Complexity:
+            Time: O(n)
+            Space: O(h) where h is the tree height
+        """
         if root is None:
             return None
         root.left = self.removeLeafNodes(root.left, target)

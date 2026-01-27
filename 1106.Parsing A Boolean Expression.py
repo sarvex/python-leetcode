@@ -1,21 +1,37 @@
 class Solution:
-  def parseBoolExpr(self, expression: str) -> bool:
-    stk = []
-    for c in expression:
-      if c in 'tf!&|':
-        stk.append(c)
-      elif c == ')':
-        t = f = 0
-        while stk[-1] in 'tf':
-          t += stk[-1] == 't'
-          f += stk[-1] == 'f'
-          stk.pop()
-        match stk.pop():
-          case '!':
-            c = 't' if f else 'f'
-          case '&':
-            c = 'f' if f else 't'
-          case '|':
-            c = 't' if t else 'f'
-        stk.append(c)
-    return stk[0] == 't'
+    def parseBoolExpr(self, expression: str) -> bool:
+        """Parse and evaluate a boolean expression using a stack.
+
+        Intuition:
+            Boolean expressions nest with operators !, &, |. A stack naturally
+            handles the nesting by collecting operands until a closing paren
+            triggers evaluation with the most recent operator.
+
+        Approach:
+            Push operators and boolean values onto the stack. On encountering
+            ')', pop all boolean values, then pop the operator and evaluate.
+            Use match/case for operator dispatch. Push the result back.
+
+        Complexity:
+            Time: O(n) where n is the length of the expression
+            Space: O(n) for the stack
+        """
+        stack: list[str] = []
+        for char in expression:
+            if char in "tf!&|":
+                stack.append(char)
+            elif char == ")":
+                true_count = false_count = 0
+                while stack[-1] in "tf":
+                    true_count += stack[-1] == "t"
+                    false_count += stack[-1] == "f"
+                    stack.pop()
+                match stack.pop():
+                    case "!":
+                        char = "t" if false_count else "f"
+                    case "&":
+                        char = "f" if false_count else "t"
+                    case "|":
+                        char = "t" if true_count else "f"
+                stack.append(char)
+        return stack[0] == "t"

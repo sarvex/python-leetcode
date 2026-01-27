@@ -1,22 +1,40 @@
 from collections import defaultdict
-from heapq import heappush, heappop
+from heapq import heappop, heappush
 
 
 class FreqStack:
-  def __init__(self):
-    self.cnt = defaultdict(int)
-    self.q = []
-    self.ts = 0
+    """Max-heap frequency stack using frequency and timestamp ordering.
 
-  def push(self, val: int) -> None:
-    self.ts += 1
-    self.cnt[val] += 1
-    heappush(self.q, (-self.cnt[val], -self.ts, val))
+    Intuition:
+        To pop the most frequent element (with recency as tiebreaker),
+        maintain a max-heap keyed by (-frequency, -timestamp, value).
 
-  def pop(self) -> int:
-    val = heappop(self.q)[2]
-    self.cnt[val] -= 1
-    return val
+    Approach:
+        1. Track each value's frequency in a counter.
+        2. On push, increment frequency and timestamp, then push to the heap.
+        3. On pop, extract the top element (highest frequency, most recent)
+           and decrement its frequency.
+
+    Complexity:
+        Time: O(log n) per push/pop operation.
+        Space: O(n)
+    """
+
+    def __init__(self) -> None:
+        self.frequency: dict[int, int] = defaultdict(int)
+        self.heap: list[tuple[int, int, int]] = []
+        self.timestamp: int = 0
+
+    def push(self, val: int) -> None:
+        self.timestamp += 1
+        self.frequency[val] += 1
+        heappush(self.heap, (-self.frequency[val], -self.timestamp, val))
+
+    def pop(self) -> int:
+        val = heappop(self.heap)[2]
+        self.frequency[val] -= 1
+        return val
+
 
 # Your FreqStack object will be instantiated and called as such:
 # obj = FreqStack()

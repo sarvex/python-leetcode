@@ -1,39 +1,52 @@
 class Solution:
     def numDecodings(self, s: str) -> int:
+        """Space-optimized DP handling wildcard '*' in decode ways.
+
+        Intuition:
+        Extend the decode ways problem to handle '*' wildcards that can represent
+        digits 1-9, tracking transitions for both single and two-digit decodings.
+
+        Approach:
+        1. Use three rolling variables for dp[i-2], dp[i-1], dp[i].
+        2. For single digit: '*' contributes 9 ways, non-zero digit contributes 1.
+        3. For two digits: enumerate valid combinations with '*' and digit pairs.
+        4. Apply modular arithmetic throughout.
+
+        Complexity:
+        Time: O(n)
+        Space: O(1)
+        """
         mod = int(1e9 + 7)
-        n = len(s)
+        length = len(s)
 
-        # dp[i - 2], dp[i - 1], dp[i]
-        a, b, c = 0, 1, 0
-        for i in range(1, n + 1):
-            # 1 digit
+        two_back, one_back, current = 0, 1, 0
+        for i in range(1, length + 1):
             if s[i - 1] == "*":
-                c = 9 * b % mod
+                current = 9 * one_back % mod
             elif s[i - 1] != "0":
-                c = b
+                current = one_back
             else:
-                c = 0
+                current = 0
 
-            # 2 digits
             if i > 1:
                 if s[i - 2] == "*" and s[i - 1] == "*":
-                    c = (c + 15 * a) % mod
+                    current = (current + 15 * two_back) % mod
                 elif s[i - 2] == "*":
                     if s[i - 1] > "6":
-                        c = (c + a) % mod
+                        current = (current + two_back) % mod
                     else:
-                        c = (c + 2 * a) % mod
+                        current = (current + 2 * two_back) % mod
                 elif s[i - 1] == "*":
                     if s[i - 2] == "1":
-                        c = (c + 9 * a) % mod
+                        current = (current + 9 * two_back) % mod
                     elif s[i - 2] == "2":
-                        c = (c + 6 * a) % mod
+                        current = (current + 6 * two_back) % mod
                 elif (
                     s[i - 2] != "0"
                     and (ord(s[i - 2]) - ord("0")) * 10 + ord(s[i - 1]) - ord("0") <= 26
                 ):
-                    c = (c + a) % mod
+                    current = (current + two_back) % mod
 
-            a, b = b, c
+            two_back, one_back = one_back, current
 
-        return c
+        return current

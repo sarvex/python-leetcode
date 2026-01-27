@@ -1,20 +1,35 @@
 class Solution:
-    def shortestWordDistance(self, wordsDict: List[str], word1: str, word2: str) -> int:
-        ans = len(wordsDict)
+    def shortestWordDistance(self, wordsDict: list[str], word1: str, word2: str) -> int:
+        """Single-pass shortest distance handling identical word pairs.
+
+        Intuition:
+            Similar to basic shortest distance, but word1 and word2 may be
+            the same. When identical, track consecutive occurrences instead.
+
+        Approach:
+            If word1 equals word2, scan for consecutive occurrences and track
+            the minimum gap. Otherwise, use the standard two-index approach
+            tracking the latest position of each word.
+
+        Complexity:
+            Time: O(n) where n is the length of wordsDict
+            Space: O(1)
+        """
+        shortest = len(wordsDict)
         if word1 == word2:
-            j = -1
-            for i, w in enumerate(wordsDict):
-                if w == word1:
-                    if j != -1:
-                        ans = min(ans, i - j)
-                    j = i
+            prev_index = -1
+            for i, word in enumerate(wordsDict):
+                if word == word1:
+                    if prev_index != -1:
+                        shortest = min(shortest, i - prev_index)
+                    prev_index = i
         else:
-            i = j = -1
-            for k, w in enumerate(wordsDict):
-                if w == word1:
-                    i = k
-                if w == word2:
-                    j = k
-                if i != -1 and j != -1:
-                    ans = min(ans, abs(i - j))
-        return ans
+            index1 = index2 = -1
+            for k, word in enumerate(wordsDict):
+                if word == word1:
+                    index1 = k
+                if word == word2:
+                    index2 = k
+                if index1 != -1 and index2 != -1:
+                    shortest = min(shortest, abs(index1 - index2))
+        return shortest

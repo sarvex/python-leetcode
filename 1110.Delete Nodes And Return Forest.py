@@ -5,23 +5,38 @@
 #         self.left = left
 #         self.right = right
 class Solution:
-    def delNodes(
-        self, root: Optional[TreeNode], to_delete: List[int]
-    ) -> List[TreeNode]:
-        def dfs(root: Optional[TreeNode]) -> Optional[TreeNode]:
-            if root is None:
+    def delNodes(self, root: TreeNode | None, to_delete: list[int]) -> list[TreeNode]:
+        """Delete given nodes and return the forest of remaining trees.
+
+        Intuition:
+            When a node is deleted, its children become new roots. Post-order
+            traversal ensures children are processed before their parent.
+
+        Approach:
+            Use DFS post-order traversal. For each node, if it is in the
+            delete set, add its non-null children to the result and return
+            None to detach it from the parent.
+
+        Complexity:
+            Time: O(n) where n is the number of nodes
+            Space: O(n) for the delete set and recursion stack
+        """
+        delete_set = set(to_delete)
+        result: list[TreeNode] = []
+
+        def dfs(node: TreeNode | None) -> TreeNode | None:
+            if node is None:
                 return None
-            root.left, root.right = dfs(root.left), dfs(root.right)
-            if root.val not in s:
-                return root
-            if root.left:
-                ans.append(root.left)
-            if root.right:
-                ans.append(root.right)
+            node.left = dfs(node.left)
+            node.right = dfs(node.right)
+            if node.val not in delete_set:
+                return node
+            if node.left:
+                result.append(node.left)
+            if node.right:
+                result.append(node.right)
             return None
 
-        s = set(to_delete)
-        ans = []
         if dfs(root):
-            ans.append(root)
-        return ans
+            result.append(root)
+        return result

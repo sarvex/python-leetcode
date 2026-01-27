@@ -1,12 +1,12 @@
 class Trie:
-    def __init__(self):
-        self.children = [None] * 128
-        self.is_end = False
+    def __init__(self) -> None:
+        self.children: list[Trie | None] = [None] * 128
+        self.is_end: bool = False
 
-    def insert(self, word):
+    def insert(self, word: str) -> None:
         node = self
-        for c in word:
-            idx = ord(c)
+        for ch in word:
+            idx = ord(ch)
             if node.children[idx] is None:
                 node.children[idx] = Trie()
             node = node.children[idx]
@@ -14,46 +14,63 @@ class Trie:
 
 
 class Solution:
-    def boldWords(self, words: List[str], s: str) -> str:
+    def boldWords(self, words: list[str], s: str) -> str:
+        """Trie-based matching with interval merging to wrap bold substrings.
+
+        Intuition:
+            Use a trie to find all substrings in s that match any word,
+            merge overlapping intervals, and wrap them in <b> tags.
+
+        Approach:
+            1. Insert all words into a trie.
+            2. For each starting index, walk the trie to find all matching
+               end positions, collecting [start, end] pairs.
+            3. Merge overlapping/adjacent intervals.
+            4. Build the result string with bold tags around merged intervals.
+
+        Complexity:
+            Time: O(N^2 + W*L) where N = len(s), W = words count, L = word length
+            Space: O(W*L + N)
+        """
         trie = Trie()
-        for w in words:
-            trie.insert(w)
-        n = len(s)
-        pairs = []
-        for i in range(n):
+        for word in words:
+            trie.insert(word)
+        length = len(s)
+        match_pairs: list[list[int]] = []
+        for i in range(length):
             node = trie
-            for j in range(i, n):
+            for j in range(i, length):
                 idx = ord(s[j])
                 if node.children[idx] is None:
                     break
                 node = node.children[idx]
                 if node.is_end:
-                    pairs.append([i, j])
-        if not pairs:
+                    match_pairs.append([i, j])
+        if not match_pairs:
             return s
-        st, ed = pairs[0]
-        t = []
-        for a, b in pairs[1:]:
-            if ed + 1 < a:
-                t.append([st, ed])
-                st, ed = a, b
+        merged_start, merged_end = match_pairs[0]
+        merged: list[list[int]] = []
+        for start, end in match_pairs[1:]:
+            if merged_end + 1 < start:
+                merged.append([merged_start, merged_end])
+                merged_start, merged_end = start, end
             else:
-                ed = max(ed, b)
-        t.append([st, ed])
+                merged_end = max(merged_end, end)
+        merged.append([merged_start, merged_end])
 
-        ans = []
-        i = j = 0
-        while i < n:
-            if j == len(t):
-                ans.append(s[i:])
+        result: list[str] = []
+        pos = interval_idx = 0
+        while pos < length:
+            if interval_idx == len(merged):
+                result.append(s[pos:])
                 break
-            st, ed = t[j]
-            if i < st:
-                ans.append(s[i:st])
-            ans.append('<b>')
-            ans.append(s[st : ed + 1])
-            ans.append('</b>')
-            j += 1
-            i = ed + 1
+            seg_start, seg_end = merged[interval_idx]
+            if pos < seg_start:
+                result.append(s[pos:seg_start])
+            result.append("<b>")
+            result.append(s[seg_start : seg_end + 1])
+            result.append("</b>")
+            interval_idx += 1
+            pos = seg_end + 1
 
-        return ''.join(ans)
+        return "".join(result)

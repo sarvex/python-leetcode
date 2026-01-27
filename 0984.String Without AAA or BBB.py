@@ -1,18 +1,34 @@
 class Solution:
     def strWithout3a3b(self, a: int, b: int) -> str:
-        ans = []
+        """Greedy construction avoiding three consecutive identical characters.
+
+        Intuition:
+        Always place two of the more frequent character followed by one of the
+        less frequent. When counts are equal, alternate single characters.
+        This prevents three consecutive identical characters.
+
+        Approach:
+        1. While both a and b are positive, compare their counts
+        2. If a > b: append "aab", if b > a: append "bba", if equal: append "ab"
+        3. Append remaining characters of whichever is left
+
+        Complexity:
+        Time: O(a + b) for building the string
+        Space: O(a + b) for the result
+        """
+        parts: list[str] = []
         while a and b:
             if a > b:
-                ans.append('aab')
+                parts.append("aab")
                 a, b = a - 2, b - 1
             elif a < b:
-                ans.append('bba')
+                parts.append("bba")
                 a, b = a - 1, b - 2
             else:
-                ans.append('ab')
+                parts.append("ab")
                 a, b = a - 1, b - 1
         if a:
-            ans.append('a' * a)
+            parts.append("a" * a)
         if b:
-            ans.append('b' * b)
-        return ''.join(ans)
+            parts.append("b" * b)
+        return "".join(parts)

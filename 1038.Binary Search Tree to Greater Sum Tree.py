@@ -6,15 +6,32 @@
 #         self.right = right
 class Solution:
     def bstToGst(self, root: TreeNode) -> TreeNode:
-        def dfs(root):
-            nonlocal s
-            if root is None:
-                return
-            dfs(root.right)
-            s += root.val
-            root.val = s
-            dfs(root.left)
+        """Binary Search Tree to Greater Sum Tree via reverse inorder traversal.
 
-        s = 0
+        Intuition:
+            In a BST, reverse inorder traversal (right -> node -> left) visits
+            nodes in descending order. Accumulate a running sum to compute the
+            greater sum for each node.
+
+        Approach:
+            Traverse the tree in reverse inorder. Maintain a running sum of all
+            visited node values. Update each node's value to include the sum of
+            all greater nodes.
+
+        Complexity:
+            Time: O(n)
+            Space: O(h) where h is tree height
+        """
+
+        def dfs(node: TreeNode | None) -> None:
+            nonlocal running_sum
+            if node is None:
+                return
+            dfs(node.right)
+            running_sum += node.val
+            node.val = running_sum
+            dfs(node.left)
+
+        running_sum = 0
         dfs(root)
         return root

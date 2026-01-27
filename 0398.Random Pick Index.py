@@ -1,18 +1,33 @@
+import random
+
+
 class Solution:
-    def __init__(self, nums: List[int]):
+    """Reservoir sampling for random index selection with equal probability."""
+
+    def __init__(self, nums: list[int]) -> None:
+        """Initialize with the given array."""
         self.nums = nums
 
     def pick(self, target: int) -> int:
-        n = ans = 0
-        for i, v in enumerate(self.nums):
-            if v == target:
-                n += 1
-                x = random.randint(1, n)
-                if x == n:
-                    ans = i
-        return ans
+        """Pick a random index of the target value using reservoir sampling.
 
+        Intuition:
+            Reservoir sampling allows picking uniformly at random from
+            an unknown number of candidates in a single pass.
 
-# Your Solution object will be instantiated and called as such:
-# obj = Solution(nums)
-# param_1 = obj.pick(target)
+        Approach:
+            1. Scan through the array, tracking how many times target appears.
+            2. For the k-th occurrence, replace the answer with probability 1/k.
+            3. This guarantees each valid index is chosen with equal probability.
+
+        Complexity:
+            Time: O(n)
+            Space: O(1)
+        """
+        count = result = 0
+        for i, value in enumerate(self.nums):
+            if value == target:
+                count += 1
+                if random.randint(1, count) == count:
+                    result = i
+        return result

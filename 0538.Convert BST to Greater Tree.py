@@ -1,20 +1,31 @@
-# Definition for a binary tree node.
-# class TreeNode:
-#     def __init__(self, val=0, left=None, right=None):
-#         self.val = val
-#         self.left = left
-#         self.right = right
 class Solution:
     def convertBST(self, root: TreeNode) -> TreeNode:
-        def dfs(root):
-            nonlocal s
-            if root is None:
-                return
-            dfs(root.right)
-            s += root.val
-            root.val = s
-            dfs(root.left)
+        """Reverse inorder traversal to convert BST to Greater Tree.
 
-        s = 0
+        Intuition:
+            In a BST, visiting nodes in reverse inorder (right-root-left)
+            processes values from largest to smallest. We can accumulate
+            a running sum to transform each node.
+
+        Approach:
+            Perform reverse inorder DFS, maintaining a running sum of all
+            visited values. Update each node's value to include the sum of
+            all greater values.
+
+        Complexity:
+            Time: O(n)
+            Space: O(h) where h is tree height
+        """
+
+        def dfs(node: TreeNode | None) -> None:
+            nonlocal running_sum
+            if node is None:
+                return
+            dfs(node.right)
+            running_sum += node.val
+            node.val = running_sum
+            dfs(node.left)
+
+        running_sum = 0
         dfs(root)
         return root

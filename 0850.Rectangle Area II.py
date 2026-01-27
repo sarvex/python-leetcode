@@ -1,67 +1,86 @@
-from typing import List
-
-
 class Node:
-  def __init__(self):
-    self.l = self.r = 0
-    self.cnt = self.length = 0
+    def __init__(self) -> None:
+        self.left = self.right = 0
+        self.count = self.length = 0
 
 
 class SegmentTree:
-  def __init__(self, nums):
-    n = len(nums) - 1
-    self.nums = nums
-    self.tr = [Node() for _ in range(n << 2)]
-    self.build(1, 0, n - 1)
+    def __init__(self, coords: list[int]) -> None:
+        num_intervals = len(coords) - 1
+        self.coords = coords
+        self.tree = [Node() for _ in range(num_intervals << 2)]
+        self._build(1, 0, num_intervals - 1)
 
-  def build(self, u, l, r):
-    self.tr[u].l, self.tr[u].r = l, r
-    if l != r:
-      mid = (l + r) >> 1
-      self.build(u << 1, l, mid)
-      self.build(u << 1 | 1, mid + 1, r)
+    def _build(self, node_idx: int, left: int, right: int) -> None:
+        self.tree[node_idx].left, self.tree[node_idx].right = left, right
+        if left != right:
+            mid = (left + right) >> 1
+            self._build(node_idx << 1, left, mid)
+            self._build(node_idx << 1 | 1, mid + 1, right)
 
-  def modify(self, u, l, r, k):
-    if self.tr[u].l >= l and self.tr[u].r <= r:
-      self.tr[u].cnt += k
-    else:
-      mid = (self.tr[u].l + self.tr[u].r) >> 1
-      if l <= mid:
-        self.modify(u << 1, l, r, k)
-      if r > mid:
-        self.modify(u << 1 | 1, l, r, k)
-    self.pushup(u)
+    def modify(self, node_idx: int, left: int, right: int, delta: int) -> None:
+        if self.tree[node_idx].left >= left and self.tree[node_idx].right <= right:
+            self.tree[node_idx].count += delta
+        else:
+            mid = (self.tree[node_idx].left + self.tree[node_idx].right) >> 1
+            if left <= mid:
+                self.modify(node_idx << 1, left, right, delta)
+            if right > mid:
+                self.modify(node_idx << 1 | 1, left, right, delta)
+        self._push_up(node_idx)
 
-  def pushup(self, u):
-    if self.tr[u].cnt:
-      self.tr[u].length = self.nums[self.tr[u].r + 1] - self.nums[self.tr[u].l]
-    elif self.tr[u].l == self.tr[u].r:
-      self.tr[u].length = 0
-    else:
-      self.tr[u].length = self.tr[u << 1].length + self.tr[u << 1 | 1].length
+    def _push_up(self, node_idx: int) -> None:
+        if self.tree[node_idx].count:
+            self.tree[node_idx].length = (
+                self.coords[self.tree[node_idx].right + 1]
+                - self.coords[self.tree[node_idx].left]
+            )
+        elif self.tree[node_idx].left == self.tree[node_idx].right:
+            self.tree[node_idx].length = 0
+        else:
+            self.tree[node_idx].length = (
+                self.tree[node_idx << 1].length + self.tree[node_idx << 1 | 1].length
+            )
 
-  @property
-  def length(self):
-    return self.tr[1].length
+    @property
+    def total_length(self) -> int:
+        return self.tree[1].length
 
 
 class Solution:
-  def rectangleArea(self, rectangles: List[List[int]]) -> int:
-    segs = []
-    alls = set()
-    for x1, y1, x2, y2 in rectangles:
-      segs.append((x1, y1, y2, 1))
-      segs.append((x2, y1, y2, -1))
-      alls.update([y1, y2])
+    def rectangleArea(self, rectangles: list[list[int]]) -> int:
+        """Sweep line with segment tree for rectangle union area.
 
-    segs.sort()
-    alls = sorted(alls)
-    tree = SegmentTree(alls)
-    m = {v: i for i, v in enumerate(alls)}
-    ans = 0
-    for i, (x, y1, y2, k) in enumerate(segs):
-      if i:
-        ans += tree.length * (x - segs[i - 1][0])
-      tree.modify(1, m[y1], m[y2] - 1, k)
-    ans %= int(1e9 + 7)
-    return ans
+        Intuition:
+            Use a vertical sweep line moving left to right. At each x-coordinate
+            event, update the segment tree with the active y-intervals and
+            accumulate the area.
+
+        Approach:
+            1. Create events for left and right edges of each rectangle.
+            2. Coordinate-compress y-values and build a segment tree.
+            3. Process events in x-order, updating active intervals and
+               accumulating area as width * active_length.
+
+        Complexity:
+            Time: O(n^2 log n) where n = number of rectangles
+            Space: O(n)
+        """
+        events: list[tuple[int, int, int, int]] = []
+        y_coords_set: set[int] = set()
+        for x1, y1, x2, y2 in rectangles:
+            events.append((x1, y1, y2, 1))
+            events.append((x2, y1, y2, -1))
+            y_coords_set.update([y1, y2])
+
+        events.sort()
+        y_coords = sorted(y_coords_set)
+        seg_tree = SegmentTree(y_coords)
+        coord_to_index = {value: i for i, value in enumerate(y_coords)}
+        total_area = 0
+        for i, (x_pos, y1, y2, delta) in enumerate(events):
+            if i:
+                total_area += seg_tree.total_length * (x_pos - events[i - 1][0])
+            seg_tree.modify(1, coord_to_index[y1], coord_to_index[y2] - 1, delta)
+        total_area %= 10**9 + 7
+        return total_area

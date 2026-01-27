@@ -1,13 +1,28 @@
 class Solution:
-    def calPoints(self, operations: List[str]) -> int:
-        stk = []
+    def calPoints(self, operations: list[str]) -> int:
+        """Stack-based simulation of baseball scoring rules.
+
+        Intuition:
+            Each operation modifies a record stack: numbers push scores,
+            '+' sums the last two, 'D' doubles the last, 'C' removes the last.
+
+        Approach:
+            1. Iterate through operations using a stack to track scores.
+            2. Apply each operation rule to modify the stack.
+            3. Return the sum of all remaining scores.
+
+        Complexity:
+            Time: O(n) where n is the number of operations
+            Space: O(n) for the score stack
+        """
+        stack: list[int] = []
         for op in operations:
             if op == "+":
-                stk.append(stk[-1] + stk[-2])
+                stack.append(stack[-1] + stack[-2])
             elif op == "D":
-                stk.append(stk[-1] << 1)
+                stack.append(stack[-1] << 1)
             elif op == "C":
-                stk.pop()
+                stack.pop()
             else:
-                stk.append(int(op))
-        return sum(stk)
+                stack.append(int(op))
+        return sum(stack)

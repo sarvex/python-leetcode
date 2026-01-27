@@ -3,32 +3,62 @@ from itertools import accumulate
 
 
 class BinaryIndexedTree:
-  def __init__(self, n):
-    self.n = n
-    self.c = [0] * (n + 1)
+    """Binary Indexed Tree (Fenwick Tree) for prefix sum queries.
 
-  def update(self, x, v):
-    while x <= self.n:
-      self.c[x] += v
-      x += x & -x
+    Supports point updates and prefix sum queries in O(log n) time.
+    """
 
-  def query(self, x):
-    s = 0
-    while x > 0:
-      s += self.c[x]
-      x -= x & -x
-    return s
+    def __init__(self, size: int) -> None:
+        """Initialize tree with given size."""
+        self.size = size
+        self.tree = [0] * (size + 1)
+
+    def update(self, index: int, delta: int) -> None:
+        """Add delta to element at index."""
+        while index <= self.size:
+            self.tree[index] += delta
+            index += index & -index
+
+    def query(self, index: int) -> int:
+        """Return prefix sum from 1 to index."""
+        total = 0
+        while index > 0:
+            total += self.tree[index]
+            index -= index & -index
+        return total
 
 
 class Solution:
-  def countRangeSum(self, nums: List[int], lower: int, upper: int) -> int:
-    s = list(accumulate(nums, initial=0))
-    arr = sorted(set(v for x in s for v in (x, x - lower, x - upper)))
-    tree = BinaryIndexedTree(len(arr))
-    ans = 0
-    for x in s:
-      l = bisect_left(arr, x - upper) + 1
-      r = bisect_left(arr, x - lower) + 1
-      ans += tree.query(r) - tree.query(l - 1)
-      tree.update(bisect_left(arr, x) + 1, 1)
-    return ans
+    def countRangeSum(self, nums: list[int], lower: int, upper: int) -> int:
+        """BIT with coordinate compression to count range sums.
+
+        Intuition:
+            Using prefix sums, a range sum [i, j] equals prefix[j+1] - prefix[i].
+            We need to count pairs where lower <= prefix[j] - prefix[i] <= upper.
+
+        Approach:
+            1. Compute prefix sums and collect all relevant values for
+               coordinate compression.
+            2. Use a Binary Indexed Tree to efficiently count how many previous
+               prefix sums fall within the valid range for each new prefix sum.
+
+        Complexity:
+            Time: O(n log n)
+            Space: O(n)
+        """
+        prefix_sums = list(accumulate(nums, initial=0))
+        sorted_vals = sorted(
+            set(
+                val
+                for prefix in prefix_sums
+                for val in (prefix, prefix - lower, prefix - upper)
+            )
+        )
+        tree = BinaryIndexedTree(len(sorted_vals))
+        result = 0
+        for prefix in prefix_sums:
+            left = bisect_left(sorted_vals, prefix - upper) + 1
+            right = bisect_left(sorted_vals, prefix - lower) + 1
+            result += tree.query(right) - tree.query(left - 1)
+            tree.update(bisect_left(sorted_vals, prefix) + 1, 1)
+        return result

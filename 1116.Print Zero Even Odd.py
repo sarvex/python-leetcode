@@ -1,31 +1,48 @@
+from collections.abc import Callable
 from threading import Semaphore
 
 
 class ZeroEvenOdd:
-    def __init__(self, n):
+    """Print the series 0102030405... using three threads.
+
+    Intuition:
+        Three semaphores coordinate the zero, odd, and even threads so that
+        zero always prints between consecutive numbers.
+
+    Approach:
+        The zero thread prints 0 and then signals either the odd or even
+        semaphore based on the current iteration parity. The odd and even
+        threads wait for their respective signals and release the zero
+        semaphore after printing.
+
+    Complexity:
+        Time: O(n) across all threads
+        Space: O(1) for the three semaphores
+    """
+
+    def __init__(self, n: int) -> None:
         self.n = n
-        self.z = Semaphore(1)
-        self.e = Semaphore(0)
-        self.o = Semaphore(0)
+        self.zero_semaphore = Semaphore(1)
+        self.even_semaphore = Semaphore(0)
+        self.odd_semaphore = Semaphore(0)
 
-    # printNumber(x) outputs "x", where x is an integer.
-    def zero(self, printNumber: 'Callable[[int], None]') -> None:
+    def zero(self, print_number: Callable[[int], None]) -> None:
         for i in range(self.n):
-            self.z.acquire()
-            printNumber(0)
+            self.zero_semaphore.acquire()
+            print_number(0)
             if i % 2 == 0:
-                self.o.release()
+                self.odd_semaphore.release()
             else:
-                self.e.release()
+                self.even_semaphore.release()
 
-    def even(self, printNumber: 'Callable[[int], None]') -> None:
+    def even(self, print_number: Callable[[int], None]) -> None:
         for i in range(2, self.n + 1, 2):
-            self.e.acquire()
-            printNumber(i)
-            self.z.release()
+            self.even_semaphore.acquire()
+            print_number(i)
+            self.zero_semaphore.release()
 
-    def odd(self, printNumber: 'Callable[[int], None]') -> None:
+    def odd(self, print_number: Callable[[int], None]) -> None:
         for i in range(1, self.n + 1, 2):
-            self.o.acquire()
-            printNumber(i)
-            self.z.release()
+            self.odd_semaphore.acquire()
+            print_number(i)
+            self.zero_semaphore.release()

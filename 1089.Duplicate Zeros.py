@@ -1,21 +1,33 @@
 class Solution:
-    def duplicateZeros(self, arr: List[int]) -> None:
-        """
-        Do not return anything, modify arr in-place instead.
+    def duplicateZeros(self, arr: list[int]) -> None:
+        """Duplicate each zero in-place, shifting elements to the right.
+
+        Intuition:
+            Two-pass approach: first count how many elements fit after duplication,
+            then fill from back to front.
+
+        Approach:
+            Pass 1: find the last element that fits in the array after zero
+            duplication. Pass 2: copy elements from that position backward,
+            duplicating zeros as encountered.
+
+        Complexity:
+            Time: O(n)
+            Space: O(1)
         """
         n = len(arr)
-        i, k = -1, 0
-        while k < n:
-            i += 1
-            k += 1 if arr[i] else 2
-        j = n - 1
-        if k == n + 1:
-            arr[j] = 0
-            i, j = i - 1, j - 1
-        while ~j:
-            if arr[i] == 0:
-                arr[j] = arr[j - 1] = arr[i]
-                j -= 1
+        source, write_count = -1, 0
+        while write_count < n:
+            source += 1
+            write_count += 1 if arr[source] else 2
+        dest = n - 1
+        if write_count == n + 1:
+            arr[dest] = 0
+            source, dest = source - 1, dest - 1
+        while dest >= 0:
+            if arr[source] == 0:
+                arr[dest] = arr[dest - 1] = arr[source]
+                dest -= 1
             else:
-                arr[j] = arr[i]
-            i, j = i - 1, j - 1
+                arr[dest] = arr[source]
+            source, dest = source - 1, dest - 1

@@ -1,36 +1,55 @@
 class Solution:
-  def tilingRectangle(self, n: int, m: int) -> int:
-    def search(i: int, j: int, t: int):
-      nonlocal ans
-      if j == m:
-        i += 1
-        j = 0
-      if i == n:
-        ans = t
-        return
-      if filled[i] >> j & 1:
-        search(i, j + 1, t)
-      elif t + 1 < ans:
-        r = c = 0
-        for k in range(i, n):
-          if filled[k] >> j & 1:
-            break
-          r += 1
-        for k in range(j, m):
-          if filled[i] >> k & 1:
-            break
-          c += 1
-        mx = r if r < c else c
-        for w in range(1, mx + 1):
-          for k in range(w):
-            filled[i + w - 1] |= 1 << (j + k)
-            filled[i + k] |= 1 << (j + w - 1)
-          search(i, j + w, t + 1)
-        for x in range(i, i + mx):
-          for y in range(j, j + mx):
-            filled[x] ^= 1 << y
+    def tilingRectangle(self, n: int, m: int) -> int:
+        """Find the minimum number of squares to tile an n x m rectangle.
 
-    ans = n * m
-    filled = [0] * n
-    search(0, 0, 0)
-    return ans
+        Intuition:
+            This is an NP-hard problem with no known polynomial solution.
+            Backtracking with pruning explores all valid placements while
+            cutting branches that cannot improve the current best.
+
+        Approach:
+            Scan cells left-to-right, top-to-bottom. At each unfilled cell,
+            try placing the largest possible square that fits. Use a bitmask
+            per row to track filled cells. Prune when the current count plus
+            one already meets or exceeds the best answer found so far.
+
+        Complexity:
+            Time: O(exponential) - backtracking with pruning
+            Space: O(n * m)
+        """
+
+        def search(row: int, col: int, count: int) -> None:
+            nonlocal best
+            if col == m:
+                row += 1
+                col = 0
+            if row == n:
+                best = count
+                return
+            if filled[row] >> col & 1:
+                search(row, col + 1, count)
+            elif count + 1 < best:
+                max_rows = 0
+                for k in range(row, n):
+                    if filled[k] >> col & 1:
+                        break
+                    max_rows += 1
+                max_cols = 0
+                for k in range(col, m):
+                    if filled[row] >> k & 1:
+                        break
+                    max_cols += 1
+                max_side = min(max_rows, max_cols)
+                for side in range(1, max_side + 1):
+                    for k in range(side):
+                        filled[row + side - 1] |= 1 << (col + k)
+                        filled[row + k] |= 1 << (col + side - 1)
+                    search(row, col + side, count + 1)
+                for x in range(row, row + max_side):
+                    for y in range(col, col + max_side):
+                        filled[x] ^= 1 << y
+
+        best = n * m
+        filled = [0] * n
+        search(0, 0, 0)
+        return best

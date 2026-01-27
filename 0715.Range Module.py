@@ -1,82 +1,108 @@
 class Node:
-  __slots__ = ['left', 'right', 'add', 'v']
+    __slots__ = ["left", "right", "add", "v"]
 
-  def __init__(self):
-    self.left = None
-    self.right = None
-    self.add = 0
-    self.v = False
+    def __init__(self) -> None:
+        self.left: Node | None = None
+        self.right: Node | None = None
+        self.add: int = 0
+        self.v: bool = False
 
 
 class SegmentTree:
-  __slots__ = ['root']
+    __slots__ = ["root"]
 
-  def __init__(self):
-    self.root = Node()
+    def __init__(self) -> None:
+        self.root = Node()
 
-  def modify(self, left, right, v, l=1, r=int(1e9), node=None):
-    if node is None:
-      node = self.root
-    if l >= left and r <= right:
-      if v == 1:
-        node.add = 1
-        node.v = True
-      else:
-        node.add = -1
-        node.v = False
-      return
-    self.pushdown(node)
-    mid = (l + r) >> 1
-    if left <= mid:
-      self.modify(left, right, v, l, mid, node.left)
-    if right > mid:
-      self.modify(left, right, v, mid + 1, r, node.right)
-    self.pushup(node)
+    def modify(
+        self,
+        left: int,
+        right: int,
+        value: int,
+        lo: int = 1,
+        hi: int = int(1e9),
+        node: Node | None = None,
+    ) -> None:
+        if node is None:
+            node = self.root
+        if lo >= left and hi <= right:
+            if value == 1:
+                node.add = 1
+                node.v = True
+            else:
+                node.add = -1
+                node.v = False
+            return
+        self.pushdown(node)
+        mid = (lo + hi) >> 1
+        if left <= mid:
+            self.modify(left, right, value, lo, mid, node.left)
+        if right > mid:
+            self.modify(left, right, value, mid + 1, hi, node.right)
+        self.pushup(node)
 
-  def query(self, left, right, l=1, r=int(1e9), node=None):
-    if node is None:
-      node = self.root
-    if l >= left and r <= right:
-      return node.v
-    self.pushdown(node)
-    mid = (l + r) >> 1
-    v = True
-    if left <= mid:
-      v = v and self.query(left, right, l, mid, node.left)
-    if right > mid:
-      v = v and self.query(left, right, mid + 1, r, node.right)
-    return v
+    def query(
+        self,
+        left: int,
+        right: int,
+        lo: int = 1,
+        hi: int = int(1e9),
+        node: Node | None = None,
+    ) -> bool:
+        if node is None:
+            node = self.root
+        if lo >= left and hi <= right:
+            return node.v
+        self.pushdown(node)
+        mid = (lo + hi) >> 1
+        result = True
+        if left <= mid:
+            result = result and self.query(left, right, lo, mid, node.left)
+        if right > mid:
+            result = result and self.query(left, right, mid + 1, hi, node.right)
+        return result
 
-  def pushup(self, node):
-    node.v = bool(node.left and node.left.v and node.right and node.right.v)
+    def pushup(self, node: Node) -> None:
+        node.v = bool(node.left and node.left.v and node.right and node.right.v)
 
-  def pushdown(self, node):
-    if node.left is None:
-      node.left = Node()
-    if node.right is None:
-      node.right = Node()
-    if node.add:
-      node.left.add = node.right.add = node.add
-      node.left.v = node.add == 1
-      node.right.v = node.add == 1
-      node.add = 0
+    def pushdown(self, node: Node) -> None:
+        if node.left is None:
+            node.left = Node()
+        if node.right is None:
+            node.right = Node()
+        if node.add:
+            node.left.add = node.right.add = node.add
+            node.left.v = node.add == 1
+            node.right.v = node.add == 1
+            node.add = 0
 
 
 class RangeModule:
-  def __init__(self):
-    self.tree = SegmentTree()
+    """Segment tree based range module for tracking intervals.
 
-  def addRange(self, left: int, right: int) -> None:
-    self.tree.modify(left, right - 1, 1)
+    Intuition:
+        A dynamic segment tree efficiently handles range add/remove/query
+        operations on a large coordinate space without materializing all nodes.
 
-  def queryRange(self, left: int, right: int) -> bool:
-    return self.tree.query(left, right - 1)
+    Approach:
+        1. Use a lazy propagation segment tree over [1, 10^9].
+        2. addRange marks an interval as covered (value 1).
+        3. removeRange marks an interval as uncovered (value -1).
+        4. queryRange checks if all points in an interval are covered.
 
-  def removeRange(self, left: int, right: int) -> None:
-    self.tree.modify(left, right - 1, -1)
+    Complexity:
+        Time: O(log N) per operation where N is the coordinate range
+        Space: O(Q * log N) where Q is the number of operations
+    """
 
-# Your RangeModule object will be instantiated and called as such:
-# obj = RangeModule()
-# obj.addRange(left,right)
-# param_2 = obj.queryRange(left,right)
-# obj.removeRange(left,right)
+    def __init__(self) -> None:
+        self.tree = SegmentTree()
+
+    def addRange(self, left: int, right: int) -> None:
+        self.tree.modify(left, right - 1, 1)
+
+    def queryRange(self, left: int, right: int) -> bool:
+        return self.tree.query(left, right - 1)
+
+    def removeRange(self, left: int, right: int) -> None:
+        self.tree.modify(left, right - 1, -1)
