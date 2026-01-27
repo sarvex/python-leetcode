@@ -1,23 +1,35 @@
-# Definition for a binary tree node.
-# class TreeNode:
-#     def __init__(self, val=0, left=None, right=None):
-#         self.val = val
-#         self.left = left
-#         self.right = right
 class Solution:
-    def pathSum(self, root: Optional[TreeNode], targetSum: int) -> List[List[int]]:
-        def dfs(root, s):
-            if root is None:
-                return
-            s += root.val
-            t.append(root.val)
-            if root.left is None and root.right is None and s == targetSum:
-                ans.append(t[:])
-            dfs(root.left, s)
-            dfs(root.right, s)
-            t.pop()
+    def pathSum(self, root: TreeNode | None, targetSum: int) -> list[list[int]]:
+        """DFS Backtracking to Collect All Paths
 
-        ans = []
-        t = []
+        Intuition:
+            Similar to Path Sum, but we need to collect all root-to-leaf paths
+            that sum to the target. Use backtracking to build and dismantle
+            the current path as we explore.
+
+        Approach:
+            Maintain a running path list and sum. At each node, append the
+            value and update the sum. If a leaf matches the target, save a
+            copy of the path. Recurse into both children, then pop the last
+            value to backtrack.
+
+        Complexity:
+            Time: O(n^2) in worst case for copying paths
+            Space: O(n) for recursion stack and current path
+        """
+
+        def dfs(node: TreeNode | None, current_sum: int) -> None:
+            if node is None:
+                return
+            current_sum += node.val
+            current_path.append(node.val)
+            if node.left is None and node.right is None and current_sum == targetSum:
+                result.append(current_path[:])
+            dfs(node.left, current_sum)
+            dfs(node.right, current_sum)
+            current_path.pop()
+
+        result: list[list[int]] = []
+        current_path: list[int] = []
         dfs(root, 0)
-        return ans
+        return result

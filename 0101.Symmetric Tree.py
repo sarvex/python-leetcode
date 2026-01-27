@@ -1,16 +1,31 @@
-# Definition for a binary tree node.
-# class TreeNode:
-#     def __init__(self, val=0, left=None, right=None):
-#         self.val = val
-#         self.left = left
-#         self.right = right
 class Solution:
-    def isSymmetric(self, root: Optional[TreeNode]) -> bool:
-        def dfs(root1, root2):
-            if root1 is None and root2 is None:
-                return True
-            if root1 is None or root2 is None or root1.val != root2.val:
-                return False
-            return dfs(root1.left, root2.right) and dfs(root1.right, root2.left)
+    def isSymmetric(self, root: TreeNode | None) -> bool:
+        """Recursive Mirror Comparison
 
-        return dfs(root, root)
+        Intuition:
+            A tree is symmetric if the left subtree is a mirror reflection of
+            the right subtree. Two subtrees mirror each other when their root
+            values are equal, left of one matches right of the other, and
+            vice versa.
+
+        Approach:
+            Define a helper that takes two nodes and checks if they are
+            mirrors. Both None means symmetric at this level. One None or
+            mismatched values means not symmetric. Recursively compare
+            left-right and right-left pairs.
+
+        Complexity:
+            Time: O(n)
+            Space: O(n) for recursion stack
+        """
+
+        def is_mirror(node1: TreeNode | None, node2: TreeNode | None) -> bool:
+            if node1 is None and node2 is None:
+                return True
+            if node1 is None or node2 is None or node1.val != node2.val:
+                return False
+            return is_mirror(node1.left, node2.right) and is_mirror(
+                node1.right, node2.left
+            )
+
+        return is_mirror(root, root)

@@ -1,26 +1,39 @@
-# Definition for a binary tree node.
-# class TreeNode:
-#     def __init__(self, val=0, left=None, right=None):
-#         self.val = val
-#         self.left = left
-#         self.right = right
+from collections import deque
+
+
 class Solution:
-    def zigzagLevelOrder(self, root: Optional[TreeNode]) -> List[List[int]]:
-        ans = []
+    def zigzagLevelOrder(self, root: TreeNode | None) -> list[list[int]]:
+        """BFS with Alternating Direction
+
+        Intuition:
+            This is a level order traversal where odd-depth levels are read
+            right-to-left. We can collect each level left-to-right and simply
+            reverse the list for alternating levels.
+
+        Approach:
+            Use standard BFS with a deque. Track a boolean flag that toggles
+            each level. Collect node values left-to-right, then reverse the
+            list when the flag indicates a right-to-left level before appending
+            to the result.
+
+        Complexity:
+            Time: O(n)
+            Space: O(n)
+        """
+        result = []
         if root is None:
-            return ans
-        q = deque([root])
-        ans = []
-        left = 1
-        while q:
-            t = []
-            for _ in range(len(q)):
-                node = q.popleft()
-                t.append(node.val)
+            return result
+        queue = deque([root])
+        is_left_to_right = True
+        while queue:
+            level_values = []
+            for _ in range(len(queue)):
+                node = queue.popleft()
+                level_values.append(node.val)
                 if node.left:
-                    q.append(node.left)
+                    queue.append(node.left)
                 if node.right:
-                    q.append(node.right)
-            ans.append(t if left else t[::-1])
-            left ^= 1
-        return ans
+                    queue.append(node.right)
+            result.append(level_values if is_left_to_right else level_values[::-1])
+            is_left_to_right = not is_left_to_right
+        return result

@@ -4,17 +4,29 @@ import pandas as pd
 def department_highest_salary(
     employee: pd.DataFrame, department: pd.DataFrame
 ) -> pd.DataFrame:
-    # Merge the two tables on departmentId and department id
-    merged = employee.merge(department, left_on='departmentId', right_on='id')
+    """Pandas GroupBy Transform Approach
 
-    # Find the maximum salary for each department
-    max_salaries = merged.groupby('departmentId')['salary'].transform('max')
+    Intuition:
+        Merge employees with departments, then use groupby transform
+        to find the max salary per department and filter matching rows.
 
-    # Filter employees who have the highest salary in their department
-    top_earners = merged[merged['salary'] == max_salaries]
+    Approach:
+        1. Merge employee and department tables on departmentId.
+        2. Compute the maximum salary per department using transform.
+        3. Filter employees whose salary equals the department maximum.
+        4. Select and rename columns to match the required output.
 
-    # Select required columns and rename them
-    result = top_earners[['name_y', 'name_x', 'salary']].copy()
-    result.columns = ['Department', 'Employee', 'Salary']
+    Complexity:
+        Time: O(n) for merge and groupby transform
+        Space: O(n) for the merged DataFrame
+    """
+    merged = employee.merge(department, left_on="departmentId", right_on="id")
+
+    max_salaries = merged.groupby("departmentId")["salary"].transform("max")
+
+    top_earners = merged[merged["salary"] == max_salaries]
+
+    result = top_earners[["name_y", "name_x", "salary"]].copy()
+    result.columns = ["Department", "Employee", "Salary"]
 
     return result

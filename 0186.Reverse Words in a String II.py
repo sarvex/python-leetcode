@@ -1,15 +1,31 @@
 class Solution:
-    def reverseWords(self, s: List[str]) -> None:
-        def reverse(i: int, j: int):
-            while i < j:
-                s[i], s[j] = s[j], s[i]
-                i, j = i + 1, j - 1
+    def reverseWords(self, s: list[str]) -> None:
+        """Two-Pass Reverse Approach
 
-        i, n = 0, len(s)
-        for j, c in enumerate(s):
-            if c == " ":
-                reverse(i, j - 1)
-                i = j + 1
-            elif j == n - 1:
-                reverse(i, j)
-        reverse(0, n - 1)
+        Intuition:
+            Reverse each word individually, then reverse the entire string
+            to achieve word-level reversal in place.
+
+        Approach:
+            1. Iterate through the list to find word boundaries (spaces).
+            2. Reverse each word in place using two pointers.
+            3. After processing all words, reverse the entire list.
+
+        Complexity:
+            Time: O(n) where n is the length of the character list
+            Space: O(1) in-place reversal
+        """
+
+        def reverse(left: int, right: int) -> None:
+            while left < right:
+                s[left], s[right] = s[right], s[left]
+                left, right = left + 1, right - 1
+
+        word_start, length = 0, len(s)
+        for idx, char in enumerate(s):
+            if char == " ":
+                reverse(word_start, idx - 1)
+                word_start = idx + 1
+            elif idx == length - 1:
+                reverse(word_start, idx)
+        reverse(0, length - 1)

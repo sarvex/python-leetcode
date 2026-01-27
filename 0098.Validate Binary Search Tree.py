@@ -1,21 +1,36 @@
-# Definition for a binary tree node.
-# class TreeNode:
-#     def __init__(self, val=0, left=None, right=None):
-#         self.val = val
-#         self.left = left
-#         self.right = right
+from math import inf
+
+
 class Solution:
-    def isValidBST(self, root: Optional[TreeNode]) -> bool:
-        def dfs(root: Optional[TreeNode]) -> bool:
-            if root is None:
+    def isValidBST(self, root: TreeNode | None) -> bool:
+        """Inorder Traversal Validation
+
+        Intuition:
+            A valid BST has an inorder traversal that produces strictly
+            increasing values. We can validate by tracking the previously
+            visited value during inorder traversal.
+
+        Approach:
+            Perform an inorder DFS traversal. Maintain a nonlocal variable
+            tracking the previous node's value. At each node, verify that the
+            current value is strictly greater than the previous value. Return
+            False immediately if the invariant is violated.
+
+        Complexity:
+            Time: O(n)
+            Space: O(n) for recursion stack
+        """
+
+        def dfs(node: TreeNode | None) -> bool:
+            if node is None:
                 return True
-            if not dfs(root.left):
+            if not dfs(node.left):
                 return False
             nonlocal prev
-            if prev >= root.val:
+            if prev >= node.val:
                 return False
-            prev = root.val
-            return dfs(root.right)
+            prev = node.val
+            return dfs(node.right)
 
         prev = -inf
         return dfs(root)

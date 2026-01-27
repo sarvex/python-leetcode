@@ -1,28 +1,49 @@
-"""
-# Definition for a Node.
+from collections import deque
+
+
 class Node:
-    def __init__(self, val: int = 0, left: 'Node' = None, right: 'Node' = None, next: 'Node' = None):
+    def __init__(
+        self,
+        val: int = 0,
+        left: "Node | None" = None,
+        right: "Node | None" = None,
+        next: "Node | None" = None,
+    ):
         self.val = val
         self.left = left
         self.right = right
         self.next = next
-"""
 
 
 class Solution:
-    def connect(self, root: "Optional[Node]") -> "Optional[Node]":
+    def connect(self, root: Node | None) -> Node | None:
+        """Level-Order BFS Approach
+
+        Intuition:
+            Each node's next pointer should point to the node immediately to its
+            right on the same level. A BFS traversal processes nodes level by level,
+            making it natural to link siblings.
+
+        Approach:
+            Use a queue for BFS. For each level, iterate through all nodes and link
+            each node's next pointer to the following node dequeued in the same level.
+
+        Complexity:
+            Time: O(n) where n is the number of nodes
+            Space: O(n) for the queue
+        """
         if root is None:
             return root
-        q = deque([root])
-        while q:
-            p = None
-            for _ in range(len(q)):
-                node = q.popleft()
-                if p:
-                    p.next = node
-                p = node
+        queue = deque([root])
+        while queue:
+            previous = None
+            for _ in range(len(queue)):
+                node = queue.popleft()
+                if previous:
+                    previous.next = node
+                previous = node
                 if node.left:
-                    q.append(node.left)
+                    queue.append(node.left)
                 if node.right:
-                    q.append(node.right)
+                    queue.append(node.right)
         return root

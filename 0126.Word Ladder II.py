@@ -1,48 +1,68 @@
+from collections import defaultdict, deque
+
+
 class Solution:
     def findLadders(
-        self, beginWord: str, endWord: str, wordList: List[str]
-    ) -> List[List[str]]:
-        def dfs(path, cur):
-            if cur == beginWord:
-                ans.append(path[::-1])
+        self, beginWord: str, endWord: str, wordList: list[str]
+    ) -> list[list[str]]:
+        """BFS Shortest Path with DFS Backtracking Approach
+
+        Intuition:
+            First find the shortest transformation distance using BFS, recording
+            predecessors at each level. Then reconstruct all shortest paths by
+            DFS backtracking from endWord to beginWord using the predecessor map.
+
+        Approach:
+            Build a word set and use BFS to explore one-character mutations level
+            by level, tracking distance and predecessors. Once the endWord is found,
+            use DFS to backtrack through predecessors and collect all shortest paths.
+
+        Complexity:
+            Time: O(n * m * 26) where n is word count and m is word length
+            Space: O(n * m) for the predecessor map and queue
+        """
+
+        def dfs(path: list[str], current: str) -> None:
+            if current == beginWord:
+                result.append(path[::-1])
                 return
-            for precursor in prev[cur]:
+            for precursor in predecessors[current]:
                 path.append(precursor)
                 dfs(path, precursor)
                 path.pop()
 
-        ans = []
+        result: list[list[str]] = []
         words = set(wordList)
         if endWord not in words:
-            return ans
+            return result
         words.discard(beginWord)
-        dist = {beginWord: 0}
-        prev = defaultdict(set)
-        q = deque([beginWord])
+        distance = {beginWord: 0}
+        predecessors: dict[str, set[str]] = defaultdict(set)
+        queue = deque([beginWord])
         found = False
         step = 0
-        while q and not found:
+        while queue and not found:
             step += 1
-            for i in range(len(q), 0, -1):
-                p = q.popleft()
-                s = list(p)
-                for i in range(len(s)):
-                    ch = s[i]
+            for _ in range(len(queue), 0, -1):
+                current_word = queue.popleft()
+                chars = list(current_word)
+                for i in range(len(chars)):
+                    original_char = chars[i]
                     for j in range(26):
-                        s[i] = chr(ord('a') + j)
-                        t = ''.join(s)
-                        if dist.get(t, 0) == step:
-                            prev[t].add(p)
-                        if t not in words:
+                        chars[i] = chr(ord("a") + j)
+                        transformed = "".join(chars)
+                        if distance.get(transformed, 0) == step:
+                            predecessors[transformed].add(current_word)
+                        if transformed not in words:
                             continue
-                        prev[t].add(p)
-                        words.discard(t)
-                        q.append(t)
-                        dist[t] = step
-                        if endWord == t:
+                        predecessors[transformed].add(current_word)
+                        words.discard(transformed)
+                        queue.append(transformed)
+                        distance[transformed] = step
+                        if endWord == transformed:
                             found = True
-                    s[i] = ch
+                    chars[i] = original_char
         if found:
             path = [endWord]
             dfs(path, endWord)
-        return ans
+        return result
